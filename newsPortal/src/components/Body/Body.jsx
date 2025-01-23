@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Filtering from "./Filtering/Filtering";
 import NewsCard from "./NewsCard/NewsCard";
 import Pagination from "./Pagination/Pagination";
-import UseDebounce from "./UseDebounce";
+import UseDebounce from "../hooks/UseDebounce";
 
 function Body({ category }) {
   const [allNews, setAllNews] = useState([]);
@@ -15,9 +15,8 @@ function Body({ category }) {
   const [cache, setCache] = useState({});
 
   const apiKey = "7088795b40d74fb29f483f00567079fd";
-  const debouncedSearchText = UseDebounce(searchText, 500);
+  const debouncedSearchText = UseDebounce(searchText, 1000);
 
-  // Fetch News Articles
   const fetchNews = async () => {
     const cacheKey = `${category}-${debouncedSearchText}-${currentPage}`;
     if (cache[cacheKey]) {
@@ -29,7 +28,6 @@ function Body({ category }) {
     try {
       setIsLoading(true);
       setError(null);
-
       const response = await fetch(
         `https://newsapi.org/v2/top-headlines?category=${category}&q=${debouncedSearchText}&page=${currentPage}&pageSize=5&apiKey=${apiKey}`
       );
@@ -82,18 +80,15 @@ function Body({ category }) {
     <>
       <Filtering searchText={searchText} onChangeSearchText={setsearchText} />
 
-      {/* Loading or Error States */}
       {isLoading && <p className="text-center">Loading...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
-
-      {/* News Cards */}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-6">
         {allNews.length > 0
           ? allNews.map((news) => <NewsCard key={news.url} news={news} />)
           : !isLoading && <p className="text-center">No news available.</p>}
       </div>
-
-      {/* Pagination */}
+      
       <Pagination
         totalCountOfNews={totalNews}
         next={currentPage}
