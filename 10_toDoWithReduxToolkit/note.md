@@ -1,5 +1,5 @@
 # React ToolKit notes
-Redux is a global state management tool.
+Redux is a global state management Library.React-redux is the default tool to intregrate redux in react app.
 - [Redux Documentation](https://redux-toolkit.js.org/introduction/getting-started) 
 ## Configuration of RTK
 - npm install @reduxjs/toolkit
@@ -15,6 +15,7 @@ export const store = configureStore({
     // reducer: {
     //     todos: todoReducer,
     // },
+    // add all reducers to store
     reducer: todoReducer,
 });
 
