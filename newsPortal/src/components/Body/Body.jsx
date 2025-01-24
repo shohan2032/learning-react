@@ -1,35 +1,83 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer } from "react";
 import Filtering from "./Filtering/Filtering";
 import NewsCard from "./NewsCard/NewsCard";
 import Pagination from "./Pagination/Pagination";
 import UseDebounce from "../hooks/UseDebounce";
 
-function Body({ category }) {
-  const [allNews, setAllNews] = useState([]);
-  const [totalNews, setTotalNews] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [previousPage, setPreviousPage] = useState(0);
-  const [searchText, setsearchText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [cache, setCache] = useState({});
+const apiKey = "7088795b40d74fb29f483f00567079fd";
 
-  const apiKey = "7088795b40d74fb29f483f00567079fd";
-  const debouncedSearchText = UseDebounce(searchText, 1000);
+// Initial State
+const initialState = {
+  allNews: [],
+  totalNews: 0,
+  currentPage: 1,
+  previousPage: 0,
+  searchText: "",
+  isLoading: false,
+  error: null,
+  cache: {},
+};
+
+// Reducer Function
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "SET_LOADING":
+      return { ...state, isLoading: true, error: null };
+    case "SET_NEWS":
+      return {
+        ...state,
+        allNews: action.payload.articles,
+        totalNews: action.payload.totalResults,
+        cache: {
+          ...state.cache,
+          [action.payload.cacheKey]: action.payload.data,
+        },
+        isLoading: false,
+      };
+    case "SET_ERROR":
+      return { ...state, error: action.payload, isLoading: false, allNews: [] };
+    case "SET_SEARCH_TEXT":
+      return {
+        ...state,
+        searchText: action.payload,
+        currentPage: 1,
+        previousPage: 0,
+      };
+    case "SET_PAGE":
+      return {
+        ...state,
+        currentPage: action.payload,
+        previousPage: state.previousPage + action.step,
+      };
+    case "RESET_PAGE":
+      return { ...state, currentPage: 1, previousPage: 0 };
+    default:
+      return state;
+  }
+};
+
+function Body({ category }) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const debouncedSearchText = UseDebounce(state.searchText, 1000);
 
   const fetchNews = async () => {
-    const cacheKey = `${category}-${debouncedSearchText}-${currentPage}`;
-    if (cache[cacheKey]) {
-      setAllNews(cache[cacheKey].articles);
-      setTotalNews(cache[cacheKey].totalResults);
+    const cacheKey = `${category}-${debouncedSearchText}-${state.currentPage}`;
+    if (state.cache[cacheKey]) {
+      dispatch({
+        type: "SET_NEWS",
+        payload: {
+          articles: state.cache[cacheKey].articles,
+          totalResults: state.cache[cacheKey].totalResults,
+          cacheKey,
+        },
+      });
       return;
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
+      dispatch({ type: "SET_LOADING" });
       const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=${category}&q=${debouncedSearchText}&page=${currentPage}&pageSize=5&apiKey=${apiKey}`
+        `https://newsapi.org/v2/top-headlines?category=${category}&q=${debouncedSearchText}&page=${state.currentPage}&pageSize=5&apiKey=${apiKey}`
       );
 
       if (!response.ok) {
@@ -42,57 +90,61 @@ function Body({ category }) {
       }
 
       const data = await response.json();
-      setAllNews(data.articles || []);
-      setTotalNews(data.totalResults || 0);
-      setCache((prev) => ({
-        ...prev,
-        [cacheKey]: data,
-      }));
-    } catch (err) {
-      setError(err.message);
-      setAllNews([]);
-    } finally {
-      setIsLoading(false);
+      dispatch({
+        type: "SET_NEWS",
+        payload: {
+          articles: data.articles || [],
+          totalResults: data.totalResults || 0,
+          cacheKey,
+          data,
+        },
+      });
+    } catch (error) {
+      dispatch({ type: "SET_ERROR", payload: "Failed to fetch news." });
     }
   };
 
   useEffect(() => {
-    setCurrentPage(1);
-    setPreviousPage(0);
+    dispatch({ type: "RESET_PAGE" });
     fetchNews();
   }, [category, debouncedSearchText]);
 
   useEffect(() => {
     fetchNews();
-  }, [currentPage]);
+  }, [state.currentPage]);
 
   const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-    setPreviousPage(previousPage + 1);
+    dispatch({ type: "SET_PAGE", payload: state.currentPage + 1, step: 1 });
   };
 
   const handlePreviousPage = () => {
-    setCurrentPage(currentPage - 1);
-    setPreviousPage(previousPage - 1);
+    dispatch({ type: "SET_PAGE", payload: state.currentPage - 1, step: -1 });
   };
 
   return (
     <>
-      <Filtering searchText={searchText} onChangeSearchText={setsearchText} />
+      <Filtering
+        searchText={state.searchText}
+        onChangeSearchText={(value) =>
+          dispatch({ type: "SET_SEARCH_TEXT", payload: value })
+        }
+      />
 
-      {isLoading && <p className="text-center">Loading...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-      
+      {state.isLoading && <p className="text-center">Loading...</p>}
+      {state.error && <p className="text-center text-red-500">{state.error}</p>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-6">
-        {allNews.length > 0
-          ? allNews.map((news) => <NewsCard key={news.url} news={news} />)
-          : !isLoading && <p className="text-center">No news available.</p>}
+        {state.allNews.length > 0
+          ? state.allNews.map((news) => <NewsCard key={news.url} news={news} />)
+          : !state.isLoading && (
+              <p className="text-center">No news available.</p>
+            )}
       </div>
-      
+
       <Pagination
-        totalCountOfNews={totalNews}
-        next={currentPage}
-        previous={previousPage}
+        totalCountOfNews={state.totalNews}
+        next={state.currentPage}
+        previous={state.previousPage}
         onChangeCurrentPage={handleNextPage}
         onChangePreviousPage={handlePreviousPage}
       />
@@ -101,4 +153,3 @@ function Body({ category }) {
 }
 
 export default Body;
-
