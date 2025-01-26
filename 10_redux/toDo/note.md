@@ -6,7 +6,7 @@ Redux is a global state management Library.React-redux is the default tool to in
 - npm install react-redux
 ---
 ### Basics of Redux
-- First we have to create a Store using "configureStore"
+### First we have to create a Store using "configureStore"
 ```javascript
 import {configureStore} from '@reduxjs/toolkit';
 import todoReducer from '../features/todo/todoSlice';
@@ -20,7 +20,7 @@ export const store = configureStore({
 });
 
 ```
-- Then we have to create Reducers(slices) using "createSlice". It has keys like name, innitialState and then reducers(every slice has a innitial state)
+### Then we have to create Reducers(slices) using "createSlice". It has keys like name, innitialState and then reducers(every slice has a innitial state)
 ``` javascript
 import { createSlice, nanoid } from "@reduxjs/toolkit";
 
@@ -62,3 +62,21 @@ export default todoSlice.reducer;
 - nanoid: Create a unique id
 - useDispatch: To send data from a component to stor.It uses a reducer to send data to the store
 - useSelector: To take data from a store
+
+### Create a provider in main.jsx or app.jsx for providing store to the childs. Best will be create the provider in main.jsx.
+```javascript
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
+import store from "./store/store.js";
+import "./index.css";
+import App from "./App.jsx";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </StrictMode>
+);
+```

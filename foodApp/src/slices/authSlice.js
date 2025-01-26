@@ -1,7 +1,5 @@
-// slices/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-// Load persisted users and the currently logged-in user from localStorage
 const allUsers = JSON.parse(localStorage.getItem("users")) || {};
 const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
