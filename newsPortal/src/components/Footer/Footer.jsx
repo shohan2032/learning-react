@@ -1,7 +1,7 @@
-import React from 'react'
-import About from './About';
-import Contact from './Contact';
-import Social from './Social';
+import React from "react";
+import About from "./About";
+import Contact from "./Contact";
+import Social from "./Social";
 function Footer() {
   return (
     <footer className="bg-gray-800 text-white py-8">
@@ -17,4 +17,4 @@ function Footer() {
   );
 }
 
-export default Footer
+export default Footer;

@@ -4,8 +4,8 @@ const allUsers = JSON.parse(localStorage.getItem("users")) || {};
 const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
 const initialState = {
-  user: currentUser, // The currently logged-in user
-  users: new Map(Object.entries(allUsers)), // All registered users
+  user: currentUser, 
+  users: new Map(Object.entries(allUsers)), 
 };
 
 const authSlice = createSlice({
@@ -19,14 +19,13 @@ const authSlice = createSlice({
         throw new Error("Username already exists");
       }
 
-      // Add the new user to the state and persist in localStorage
       state.users.set(username, password);
       localStorage.setItem(
         "users",
         JSON.stringify(Object.fromEntries(state.users))
       );
 
-      // Optionally, log the user in immediately after registration
+      // instantly login the user
       state.user = username;
       localStorage.setItem("user", JSON.stringify(username));
     },
@@ -35,14 +34,14 @@ const authSlice = createSlice({
 
       if (state.users.has(username) && state.users.get(username) === password) {
         state.user = username;
-        localStorage.setItem("user", JSON.stringify(username)); // Persist user
+        localStorage.setItem("user", JSON.stringify(username)); 
       } else {
         throw new Error("Invalid username or password");
       }
     },
     logout: (state) => {
       state.user = null;
-      localStorage.removeItem("user"); // Clear persisted user
+      localStorage.removeItem("user"); 
     },
   },
 });
