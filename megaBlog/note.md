@@ -10,7 +10,11 @@
 # Text Editor
 - [TinyMCE](https://www.tiny.cloud/docs/tinymce/latest/)
 
-# env variables creation and accessing
+# useForm hook for creating form
+- [useForm](https://react-hook-form.com/get-started)
+
+
+# Env variables creation and accessing
 - if we create the propject with main react(npm create react-app) then in .env file we have to write the env variables like this: REACT_APP_VARIABLE_NAME = "". Accessing this variable will be like this:
 process.env.variable_name
 

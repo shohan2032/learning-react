@@ -11,6 +11,7 @@ export class AuthService {
       .setProject(conf.appwriteProjectId);
     this.account = new Account(this.client);
   }
+
   async createAccount({ email, password, name }) {
     try {
       const userAccount = await this.account.create(
@@ -20,13 +21,11 @@ export class AuthService {
         name
       );
       if (userAccount) {
-        // call a method which will let the user login into the main page directly
         return this.login(email, password);
-      } else {
-        return userAccount;
       }
     } catch (error) {
-      throw error;
+      console.error("Error creating account:", error.message);
+      throw new Error("Account creation failed");
     }
   }
 
@@ -34,7 +33,8 @@ export class AuthService {
     try {
       return await this.account.createEmailPasswordSession(email, password);
     } catch (error) {
-      throw error;
+      console.error("Error logging in:", error.message);
+      throw new Error("Login failed");
     }
   }
 
@@ -42,16 +42,17 @@ export class AuthService {
     try {
       return await this.account.get();
     } catch (error) {
-      throw error;
+      console.error("Error fetching current user:", error.message);
+      throw new Error("Failed to fetch user data");
     }
-    return null;
   }
 
   async logout() {
     try {
       await this.account.deleteSessions();
     } catch (error) {
-      throw error;
+      console.error("Error logging out:", error.message);
+      throw new Error("Logout failed");
     }
   }
 }
@@ -59,5 +60,3 @@ export class AuthService {
 const authService = new AuthService();
 
 export default authService;
-
-// auth documentation https://appwrite.io/docs/products/auth/quick-start
