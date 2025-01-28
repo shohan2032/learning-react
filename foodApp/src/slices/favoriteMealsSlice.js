@@ -47,19 +47,9 @@ const favoriteMealsSlice = createSlice({
         );
       }
     },
-    clearFavorites: (state, action) => {
-      const { username } = action.payload;
-      state.favoriteMeals.delete(username);
-
-      // Persist to localStorage
-      localStorage.setItem(
-        "favoriteMeals",
-        JSON.stringify(Object.fromEntries(state.favoriteMeals))
-      );
-    },
   },
 });
 
-export const { addFavorite, removeFavorite, clearFavorites } =
+export const { addFavorite, removeFavorite } =
   favoriteMealsSlice.actions;
 export default favoriteMealsSlice.reducer;

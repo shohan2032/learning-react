@@ -26,7 +26,7 @@ function Header() {
               className="h-10 w-10 rounded-full"
             />
           </Link>
-          <span className="text-xl font-bold text-gray-700">My Portfolio</span>
+          <span className="text-xl font-bold text-gray-700">Food Hub</span>
         </div>
 
         {/* Navigation Links */}
@@ -36,7 +36,10 @@ function Header() {
               item.active && (
                 <li key={item.name}>
                   <button
-                    onClick={() => navigate(item.slug)}
+                    onClick={() => (
+                      // console.log("Clicked")
+                      navigate(item.slug)
+                    )}
                     className="text-gray-700 hover:text-blue-500 transition"
                   >
                     {item.name}

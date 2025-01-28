@@ -1,22 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const allUsers = JSON.parse(localStorage.getItem("users")) || {};
-const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+// const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
 const initialState = {
-  user: currentUser, 
+  user: null, 
   users: new Map(Object.entries(allUsers)), 
+  error: null, 
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    register: (state, action) => {
+    signup: (state, action) => {
       const { username, password } = action.payload;
 
       if (state.users.has(username)) {
-        throw new Error("Username already exists");
+        state.error = "Username already exists"; 
+        return;
       }
 
       state.users.set(username, password);
@@ -25,26 +27,28 @@ const authSlice = createSlice({
         JSON.stringify(Object.fromEntries(state.users))
       );
 
-      // instantly login the user
       state.user = username;
       localStorage.setItem("user", JSON.stringify(username));
+      state.error = null;
     },
     login: (state, action) => {
       const { username, password } = action.payload;
 
       if (state.users.has(username) && state.users.get(username) === password) {
         state.user = username;
-        localStorage.setItem("user", JSON.stringify(username)); 
+        localStorage.setItem("user", JSON.stringify(username));
+        state.error = null; 
       } else {
-        throw new Error("Invalid username or password");
+        state.error = "Invalid username or password";
       }
     },
     logout: (state) => {
       state.user = null;
-      localStorage.removeItem("user"); 
+      localStorage.removeItem("user");
+      state.error = null;
     },
   },
 });
 
-export const { register, login, logout } = authSlice.actions;
+export const { signup, login, logout } = authSlice.actions;
 export default authSlice.reducer;
