@@ -6,7 +6,7 @@ import { login } from "../../slices/authSlice";
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, error } = useSelector((state) => state.auth); // Get user and error from Redux state
+  const { user, error } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

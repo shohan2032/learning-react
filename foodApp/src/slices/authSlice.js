@@ -14,6 +14,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     signup: (state, action) => {
+      state.error = null;
+      if(action.payload.password.length < 5) {
+        state.error = "Password must be at least 5 characters long"; 
+        return;
+      }
       const { username, password } = action.payload;
 
       if (state.users.has(username)) {
@@ -32,6 +37,7 @@ const authSlice = createSlice({
       state.error = null;
     },
     login: (state, action) => {
+      state.error = null;
       const { username, password } = action.payload;
 
       if (state.users.has(username) && state.users.get(username) === password) {

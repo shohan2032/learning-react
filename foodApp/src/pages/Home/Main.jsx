@@ -108,7 +108,6 @@ function Main() {
 
     if (area) {
       fetchMealsByArea(area);
-      // setSelectedArea("");
     } else {
       fetchMealCategory();
     }
@@ -144,7 +143,6 @@ function Main() {
   useEffect(() => {
     if (debouncedSearchTerm) {
       fetchMealBySearch();
-      setSearchTerm("");
     } else {
       fetchMealCategory();
     }
