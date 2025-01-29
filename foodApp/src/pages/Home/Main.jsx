@@ -6,14 +6,16 @@ import MealCard from "./MealCard";
 
 function Main() {
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+  // const debouncedSearchTerm = UseDebounce(searchTerm, 500);
   const [selectedArea, setSelectedArea] = useState("");
   const [allMealCategory, setAllMealCategory] = useState([]);
   const [allMealByArea, setAllMealByArea] = useState([]);
   const [filteredMeals, setFilteredMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const [savedMeal, setSavedMeal] = useState([]);
+  const [isMealCategory, setIsMealCategory] = useState(true);
+  
   const mealAreas = [
     "American",
     "British",
@@ -52,6 +54,8 @@ function Main() {
       setError(null);
       setAllMealByArea([]);
       setFilteredMeals([]);
+      setSelectedArea("");
+      setIsMealCategory(true);
 
       const response = await fetch(
         `https://www.themealdb.com/api/json/v1/1/categories.php`
@@ -65,6 +69,8 @@ function Main() {
 
       const data = await response.json();
       setAllMealCategory(data.categories);
+      setSavedMeal(data.categories);
+      setIsMealCategory(true);
     } catch (err) {
       setError(err.message);
       setAllMealCategory([]);
@@ -83,6 +89,7 @@ function Main() {
       setError(null);
       setAllMealCategory([]);
       setFilteredMeals([]);
+      setIsMealCategory(false);
 
       const response = await fetch(
         `https://www.themealdb.com/api/json/v1/1/filter.php?a=${area}`
@@ -94,6 +101,8 @@ function Main() {
       }
       const data = await response.json();
       setAllMealByArea(data.meals);
+      setSavedMeal(data.meals);
+      setIsMealCategory(false);
     } catch (err) {
       setError(err.message);
       setAllMealByArea([]);
@@ -105,7 +114,6 @@ function Main() {
   const handleAreaChange = (event) => {
     const area = event.target.value;
     setSelectedArea(area);
-
     if (area) {
       fetchMealsByArea(area);
     } else {
@@ -113,41 +121,31 @@ function Main() {
     }
   };
 
-  const fetchMealBySearch = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      setAllMealByArea([]);
-      setAllMealCategory([]);
-
-      const response = await fetch(
-        `https://www.themealdb.com/api/json/v1/1/filter.php?i=${debouncedSearchTerm}`
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch meals by search term. Status: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      setFilteredMeals(data.meals);
-    } catch (err) {
-      setError(err.message);
-      setFilteredMeals([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      fetchMealBySearch();
+    if (searchTerm) {
+      if (isMealCategory) {
+        const filteredResults = savedMeal.filter((meal) =>
+          meal.strCategory.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredMeals(filteredResults);
+        setAllMealCategory([]);
+        setAllMealByArea([]);
+      } else {
+        const filteredResults = savedMeal.filter((meal) =>
+          meal.strMeal.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredMeals(filteredResults);
+        setAllMealCategory([]);
+        setAllMealByArea([]);
+      }
     } else {
-      fetchMealCategory();
+      if (isMealCategory) {
+        fetchMealCategory();
+      } else {
+        setFilteredMeals(savedMeal);
+      }
     }
-  }, [debouncedSearchTerm]);
-
+  }, [searchTerm]);
 
   return (
     <div className="container mx-auto p-6">
@@ -175,6 +173,18 @@ function Main() {
             ))}
           </select>
         </div>
+        {selectedArea && (
+          <button
+            onClick={() => {
+              setSelectedArea("");
+              setAllMealByArea([]);
+              fetchMealCategory();
+            }}
+            className="mt-6 px-3 py-2 bg-blue-700 text-white rounded-md hover:bg-red-600 transition text-sm"
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       {isLoading && <p className="text-center text-xl">Loading...</p>}
@@ -195,10 +205,16 @@ function Main() {
               <MealCard key={meal.idMeal} meal={meal} />
             ))}
 
-          {filteredMeals.length > 0 &&
-            filteredMeals.map((meal) => (
-              <MealCard key={meal.idMeal} meal={meal} />
-            ))}
+          {filteredMeals.length > 0 && isMealCategory
+            ? filteredMeals.map((category) => (
+                <CategoryWiseMealCard
+                  key={category.idCategory}
+                  category={category}
+                />
+              ))
+            : filteredMeals.map((meal) => (
+                <MealCard key={meal.idMeal} meal={meal} />
+              ))}
         </div>
       )}
     </div>
