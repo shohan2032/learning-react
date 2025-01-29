@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const allUsers = JSON.parse(localStorage.getItem("users")) || {};
-// const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
 const initialState = {
-  user: null, 
+  user: currentUser, 
   users: new Map(Object.entries(allUsers)), 
   error: null, 
 };

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { addFavorite, removeFavorite } from "../../slices/favoriteMealsSlice";
 import Swal from "sweetalert2";
 
-
 function MealDetails() {
   const { mealId } = useParams();
   const [meal, setMeal] = useState(null);
@@ -35,26 +34,40 @@ function MealDetails() {
 
   const handleFavoriteClick = () => {
     if (isFavorite) {
-      dispatch(removeFavorite({ username, mealId }));
-    } else {
       Swal.fire({
-        title: "Successfully Save To Favorite",
-        showClass: {
-          popup: `
-            animate__animated
-            animate__fadeInUp
-            animate__faster
-          `
-        },
-        hideClass: {
-          popup: `
-            animate__animated
-            animate__fadeOutDown
-            animate__faster
-          `
+        title: "Are you sure?",
+        // text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, remove it!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          dispatch(removeFavorite({ username, mealId }));
+          Swal.fire({
+            title: "Removed!",
+            text: "This meal has been removed from favorite.",
+            icon: "success",
+          });
         }
       });
-      dispatch(addFavorite({ username, mealId }));
+    } else {
+      Swal.fire({
+        title: "Do you want to save the meal in favorite?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        denyButtonText: `Don't save`,
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          dispatch(addFavorite({ username, mealId }));
+          Swal.fire("Saved!", "", "success");
+        } else if (result.isDenied) {
+          Swal.fire("Meal does not saved", "", "info");
+        }
+      });
     }
   };
 

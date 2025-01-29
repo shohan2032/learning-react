@@ -1,11 +1,9 @@
-// slices/favoriteMealsSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-// Load persisted favorites from localStorage
 const storedFavorites = JSON.parse(localStorage.getItem("favoriteMeals")) || {};
 
 const initialState = {
-  favoriteMeals: new Map(Object.entries(storedFavorites)), // Convert stored object to Map
+  favoriteMeals: new Map(Object.entries(storedFavorites)), 
 };
 
 const favoriteMealsSlice = createSlice({
@@ -16,7 +14,7 @@ const favoriteMealsSlice = createSlice({
       const { username, mealId } = action.payload;
 
       if (!state.favoriteMeals.has(username)) {
-        state.favoriteMeals.set(username, []); // Initialize if no entry exists
+        state.favoriteMeals.set(username, []); 
       }
 
       const userFavorites = state.favoriteMeals.get(username);
@@ -24,7 +22,7 @@ const favoriteMealsSlice = createSlice({
         userFavorites.push(mealId);
       }
 
-      // Persist to localStorage
+      
       localStorage.setItem(
         "favoriteMeals",
         JSON.stringify(Object.fromEntries(state.favoriteMeals))
@@ -39,8 +37,7 @@ const favoriteMealsSlice = createSlice({
           username,
           userFavorites.filter((id) => id !== mealId)
         );
-
-        // Persist to localStorage
+        
         localStorage.setItem(
           "favoriteMeals",
           JSON.stringify(Object.fromEntries(state.favoriteMeals))

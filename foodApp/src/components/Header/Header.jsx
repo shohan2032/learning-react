@@ -17,7 +17,6 @@ function Header() {
   return (
     <header className="bg-white shadow-md">
       <nav className="container mx-auto flex items-center justify-between p-4">
-        {/* Logo Section */}
         <div className="flex items-center space-x-4">
           <Link to="/">
             <img
@@ -29,17 +28,16 @@ function Header() {
           <span className="text-xl font-bold text-gray-700">Food Hub</span>
         </div>
 
-        {/* Navigation Links */}
         <ul className="flex items-center space-x-6">
           {navItems.map(
             (item) =>
               item.active && (
                 <li key={item.name}>
                   <button
-                    onClick={() => (
+                    onClick={() =>
                       // console.log("Clicked")
                       navigate(item.slug)
-                    )}
+                    }
                     className="text-gray-700 hover:text-blue-500 transition"
                   >
                     {item.name}

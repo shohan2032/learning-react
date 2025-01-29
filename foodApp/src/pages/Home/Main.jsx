@@ -10,6 +10,7 @@ function Main() {
   const [selectedArea, setSelectedArea] = useState("");
   const [allMealCategory, setAllMealCategory] = useState([]);
   const [allMealByArea, setAllMealByArea] = useState([]);
+  const [filteredMeals, setFilteredMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -45,12 +46,12 @@ function Main() {
     "Vietnamese",
   ];
 
-  // Fetch all meal categories
   const fetchMealCategory = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      setAllMealByArea([]); // Clear area meals when fetching categories
+      setAllMealByArea([]);
+      setFilteredMeals([]);
 
       const response = await fetch(
         `https://www.themealdb.com/api/json/v1/1/categories.php`
@@ -72,12 +73,16 @@ function Main() {
     }
   };
 
-  // Fetch meals by area
+  useEffect(() => {
+    fetchMealCategory();
+  }, []);
+
   const fetchMealsByArea = async (area) => {
     try {
       setIsLoading(true);
       setError(null);
-      setAllMealCategory([]); // Clear categories when fetching area meals
+      setAllMealCategory([]);
+      setFilteredMeals([]);
 
       const response = await fetch(
         `https://www.themealdb.com/api/json/v1/1/filter.php?a=${area}`
@@ -97,37 +102,66 @@ function Main() {
     }
   };
 
-  // Handle area selection
   const handleAreaChange = (event) => {
     const area = event.target.value;
     setSelectedArea(area);
 
     if (area) {
-      fetchMealsByArea(area); // Fetch meals for the selected area
+      fetchMealsByArea(area);
+      // setSelectedArea("");
     } else {
-      fetchMealCategory(); // Reset to categories if "All Areas" is selected
+      fetchMealCategory();
     }
   };
 
-  // Fetch default meal categories on page load
+  const fetchMealBySearch = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setAllMealByArea([]);
+      setAllMealCategory([]);
+
+      const response = await fetch(
+        `https://www.themealdb.com/api/json/v1/1/filter.php?i=${debouncedSearchTerm}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch meals by search term. Status: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      setFilteredMeals(data.meals);
+    } catch (err) {
+      setError(err.message);
+      setFilteredMeals([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchMealCategory();
-  }, []);
+    if (debouncedSearchTerm) {
+      fetchMealBySearch();
+      setSearchTerm("");
+    } else {
+      fetchMealCategory();
+    }
+  }, [debouncedSearchTerm]);
+
 
   return (
     <div className="container mx-auto p-6">
-      {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        {/* Search Bar */}
         <SearchBar searchText={searchTerm} onChangeSearchText={setSearchTerm} />
 
-        {/* Area Selection */}
         <div className="w-full sm:w-1/3">
           <label
             htmlFor="area-select"
             className="block text-sm font-medium text-gray-700"
           >
-            Select Area
+            Meals By Country
           </label>
           <select
             id="area-select"
@@ -145,14 +179,11 @@ function Main() {
         </div>
       </div>
 
-      {/* Loading and Error States */}
       {isLoading && <p className="text-center text-xl">Loading...</p>}
       {error && <p className="text-center text-red-500 text-xl">{error}</p>}
 
-      {/* Category or Area Meals */}
       {!isLoading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 my-6">
-          {/* Show Meal Categories */}
           {allMealCategory.length > 0 &&
             allMealCategory.map((category) => (
               <CategoryWiseMealCard
@@ -161,9 +192,13 @@ function Main() {
               />
             ))}
 
-          {/* Show Meals by Area */}
           {allMealByArea.length > 0 &&
             allMealByArea.map((meal) => (
+              <MealCard key={meal.idMeal} meal={meal} />
+            ))}
+
+          {filteredMeals.length > 0 &&
+            filteredMeals.map((meal) => (
               <MealCard key={meal.idMeal} meal={meal} />
             ))}
         </div>
