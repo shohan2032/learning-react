@@ -4,9 +4,9 @@ const allUsers = JSON.parse(localStorage.getItem("users")) || {};
 const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
 const initialState = {
-  user: currentUser, 
-  users: new Map(Object.entries(allUsers)), 
-  error: null, 
+  user: currentUser,
+  users: new Map(Object.entries(allUsers)),
+  error: null,
 };
 
 const authSlice = createSlice({
@@ -14,15 +14,14 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     signup: (state, action) => {
-      state.error = null;
-      if(action.payload.password.length < 5) {
-        state.error = "Password must be at least 5 characters long"; 
+      if (action.payload.password.length < 5) {
+        state.error = "Password must be at least 5 characters long";
         return;
       }
       const { username, password } = action.payload;
 
       if (state.users.has(username)) {
-        state.error = "Username already exists"; 
+        state.error = "Username already exists";
         return;
       }
 
@@ -37,13 +36,12 @@ const authSlice = createSlice({
       state.error = null;
     },
     login: (state, action) => {
-      state.error = null;
       const { username, password } = action.payload;
 
       if (state.users.has(username) && state.users.get(username) === password) {
         state.user = username;
         localStorage.setItem("user", JSON.stringify(username));
-        state.error = null; 
+        state.error = null;
       } else {
         state.error = "Invalid username or password";
       }
@@ -53,8 +51,11 @@ const authSlice = createSlice({
       localStorage.removeItem("user");
       state.error = null;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
 });
 
-export const { signup, login, logout } = authSlice.actions;
+export const { signup, login, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

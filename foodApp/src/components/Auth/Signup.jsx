@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { signup } from "../../slices/authSlice"
+import { signup,clearError } from "../../slices/authSlice"
 function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -40,6 +40,7 @@ function Signup() {
           Already have an account?{" "}
           <Link
             to="/login"
+            onClick={() => dispatch(clearError())}
             className="text-blue-500 font-medium hover:underline"
           >
             Sign In
