@@ -43,7 +43,7 @@ function BlogDetails() {
       setLocalLikeCount(blog.likeCount);
     }
   }, [blog]);
- console.log(localLikeCount);
+  console.log(localLikeCount);
   const handleFavoriteClick = async () => {
     if (isFavorite) {
       const result = await Swal.fire({
@@ -100,8 +100,12 @@ function BlogDetails() {
               <span className="font-semibold">Author:</span> {blog.author}
             </p>
           </div>
-          <p className="text-gray-700 leading-relaxed mb-6">{blog.content}</p>
-
+          <p className="text-gray-700 leading-relaxed mb-6 font-semibold">
+            {" "}
+            Content:
+            <hr /> {blog.content}
+          </p>
+          <hr />
           <div className="text-gray-700 text-center text-lg mb-6">
             ❤️ {localLikeCount} Likes
           </div>

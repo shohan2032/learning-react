@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login, clearError } from "../slices/authSlice";
+import { login, clearError, resetSignUpSuccess } from "../slices/authSlice";
 
 function Login() {
+  // console.log("Login a ashce");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, error } = useSelector((state) => state.auth);
+  const { user, error, signUpSuccess } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showSignUpSuccessMessage, setShowSignUpSuccessMessage] = useState(false);
+
+  useEffect(() => {
+    if (signUpSuccess) {
+      dispatch(resetSignUpSuccess());
+      setShowSignUpSuccessMessage(true);
+    }
+  }, []);
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -27,6 +36,11 @@ function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
+        {showSignUpSuccessMessage && (
+          <div className="mb-4 bg-green-50 border border-green-400 text-green-600 text-sm rounded-md p-3">
+            Account created successfully! Please login with your credentials.
+          </div>
+        )}
         <div className="text-center">
           <Link to="/">
             <img
@@ -35,7 +49,7 @@ function Login() {
               className="h-16 w-16 mx-auto mb-4"
             />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome!!!</h1>
           <p className="text-sm text-gray-600 mt-2">
             Sign in to continue to{" "}
             <span className="font-semibold">Blog Hub</span>

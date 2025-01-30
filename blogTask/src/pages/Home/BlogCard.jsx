@@ -27,8 +27,8 @@ function BlogCard({ blog }) {
         <p className="text-sm text-gray-700 mb-4 flex-grow">
           Content: {truncateContent(blog.content)}
         </p>
-        <h5 className="text-black text-xl font-semibold">Author: {blog.author}</h5>
-        <h5 className="text-black text-xl font-semibold">LikedBy: {blog.likeCount}</h5>
+        <p className="text-black text-xl font-semibold"> Author: {blog.author}</p>
+        <p className="text-black text-xl font-semibold">LikedBy: {blog.likeCount}</p>
         <p className="text-gray-500 text-sm">
           Published: {new Date(blog.id).toLocaleDateString()}
         </p>

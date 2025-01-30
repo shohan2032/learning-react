@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { signup,clearError } from "../slices/authSlice"
+import { signup, clearError, resetSignUpSuccess } from "../slices/authSlice";
 function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, error } = useSelector((state) => state.auth);
+  const { signUpSuccess, error } = useSelector((state) => state.auth);
 
   const handleSignup = (event) => {
     event.preventDefault();
@@ -18,10 +18,10 @@ function Signup() {
   };
 
   useEffect(() => {
-    if (user) {
-      navigate("/login");
+    if (signUpSuccess) {
+      navigate("/login"); 
     }
-  }, [user]);
+  }, [signUpSuccess]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-50">

@@ -7,6 +7,7 @@ const initialState = {
   user: currentUser,
   users: new Map(Object.entries(allUsers)),
   error: null,
+  signUpSuccess: false,
 };
 
 const authSlice = createSlice({
@@ -31,9 +32,13 @@ const authSlice = createSlice({
         JSON.stringify(Object.fromEntries(state.users))
       );
 
-      state.user = username;
-      localStorage.setItem("user", JSON.stringify(username));
+      // state.user = username;
+      // localStorage.setItem("user", JSON.stringify(username));
+      state.signUpSuccess = true;
       state.error = null;
+    },
+    resetSignUpSuccess: (state) => {
+      state.signUpSuccess = false;
     },
     login: (state, action) => {
       const { username, password } = action.payload;
@@ -57,5 +62,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { signup, login, logout, clearError } = authSlice.actions;
+export const { signup, resetSignUpSuccess, login, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
