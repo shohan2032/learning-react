@@ -54,7 +54,7 @@ const blogSlice = createSlice({
       }
     },
     addBlog: (state, action) => {
-      const { title, author, content, isPrivate, imageId } = action.payload;
+      const { title, author, content, isPrivate, imageId, estimateReadingTime } = action.payload;
       // console.log(action.payload);
       const blog = {
         id: Date.now(),
@@ -63,7 +63,8 @@ const blogSlice = createSlice({
         content,
         likeCount: 0,
         private: isPrivate,
-        imageId: imageId
+        imageId: imageId,
+        estimateReadingTime
       };
 
       state.allBlogs.push(blog);
@@ -168,9 +169,6 @@ const blogSlice = createSlice({
           JSON.stringify(Object.fromEntries(state.allLikedBlogs))
         );
       } 
-    },
-    clearError: (state) => {
-      state.error = null;
     },
     clearError: (state) => {
       state.error = null;

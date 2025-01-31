@@ -30,6 +30,7 @@ function Header() {
             />
           </Link>
           <span className="text-xl font-bold text-gray-700">Blog Hub</span>
+          <span className="text-xl font-bold text-gray-700">{currentUser}</span>
         </div>
 
         <ul className="flex items-center space-x-6">

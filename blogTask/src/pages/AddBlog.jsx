@@ -12,6 +12,7 @@ function AddBlog() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [estimateReadingTime, setEstimateReadingTime] = useState(10);
   const [randomNumber, setRandomNumber] = useState(100);
   useEffect(() => {
     setRandomNumber(Math.floor(Math.random() * 1000 + 1));
@@ -25,7 +26,7 @@ function AddBlog() {
       return;
     }
 
-    dispatch(addBlog({ title, author: username, content, isPrivate, imageId: randomNumber }));
+    dispatch(addBlog({ title, author: username, content, isPrivate, imageId: randomNumber, estimateReadingTime }));
 
     Swal.fire("Success", "Blog added successfully!", "success");
     navigate("/");
@@ -56,6 +57,17 @@ function AddBlog() {
             placeholder="Enter blog content"
             required
           ></textarea>
+        </div>
+        <div>
+          <label className="block font-medium">Estimate Reading Time</label>
+          <input
+            type="text"
+            value={estimateReadingTime}
+            onChange={(e) => setEstimateReadingTime(e.target.value)}
+            className="w-full p-2 border rounded-md"
+            placeholder="Enter blog title"
+            required
+          />
         </div>
         <div className="flex items-center space-x-2">
           <input

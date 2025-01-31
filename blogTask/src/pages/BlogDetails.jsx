@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
+import { formatDistanceToNow } from "date-fns";
+import BlogEditModal from "./BlogEditModal";
+import { useNavigate } from "react-router-dom";
 import {
   filteredBlogById,
   removeFavorite,
@@ -10,6 +13,7 @@ import {
   dislikeBlog,
   addLikedBlog,
   removeLikedBlog,
+  deleteBlog,
 } from "../slices/blog";
 
 function BlogDetails() {
@@ -17,6 +21,9 @@ function BlogDetails() {
   const { blogId } = useParams();
   const username = useSelector((state) => state.auth.user);
   const blog = useSelector((state) => state.favoriteBlogs.BlogById);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentBlogId, setCurrentBlogId] = useState(null);
+  const navigate = useNavigate();
 
   const favoriteBlogs = useSelector(
     (state) => state.favoriteBlogs.favoriteBlogs.get(username) || []
@@ -36,14 +43,13 @@ function BlogDetails() {
 
   useEffect(() => {
     dispatch(filteredBlogById({ blogId: blogIdInNumber }));
-  }, [dispatch, blogIdInNumber]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (blog) {
       setLocalLikeCount(blog.likeCount);
     }
   }, [blog]);
-  // console.log(localLikeCount);
   const handleFavoriteClick = async () => {
     if (isFavorite) {
       const result = await Swal.fire({
@@ -65,7 +71,7 @@ function BlogDetails() {
       }
     } else {
       dispatch(addFavorite({ username, blogId: blogIdInNumber }));
-      Swal.fire("Saved!", "", "success");
+      // Swal.fire("Saved!", "", "success");
     }
   };
 
@@ -74,15 +80,49 @@ function BlogDetails() {
       dispatch(removeLikedBlog({ username, blogId: blogIdInNumber }));
       dispatch(dislikeBlog({ blogId: blogIdInNumber }));
       setLocalLikeCount(localLikeCount - 1);
-      Swal.fire("Unliked!", "", "success");
+      // Swal.fire("Unliked!", "", "success");
       hasLiked = false;
     } else {
       dispatch(addLikedBlog({ username, blogId: blogIdInNumber }));
       dispatch(likeBlog({ blogId: blogIdInNumber }));
       setLocalLikeCount(localLikeCount + 1);
-      Swal.fire("Liked!", "", "success");
+      // Swal.fire("Liked!", "", "success");
       hasLiked = true;
     }
+  };
+
+  const handleDelete = (blogId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(deleteBlog({ blogId }));
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your blog has been deleted.",
+          icon: "success",
+          confirmButtonText: "Cool",
+        });
+        navigate("/");
+      }
+    });
+  };
+
+  const handleEdit = (blogId) => {
+    setCurrentBlogId(blogId);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentBlogId(null);
+    dispatch(filteredBlogById({ blogId: blogIdInNumber }));
   };
 
   return (
@@ -98,6 +138,13 @@ function BlogDetails() {
           <div className="text-center">
             <p className="text-lg mb-2">
               <span className="font-semibold">Author:</span> {blog.author}
+            </p>
+            <p className="text-gray-500 text-sm font-semibold">
+              Published:{" "}
+              {formatDistanceToNow(new Date(blog.id), { addSuffix: true })}
+            </p>
+            <p className="text-gray-500 text-sm font-semibold">
+              Estimate Reading Time: {blog.estimateReadingTime}
             </p>
           </div>
           <p className="text-gray-700 leading-relaxed mb-6 font-semibold">
@@ -133,7 +180,27 @@ function BlogDetails() {
               >
                 {hasLiked ? "Dislike" : "Like"}
               </button>
+              {username === blog.author && (
+                <button
+                  onClick={() => handleEdit(blog.id)}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition"
+                >
+                  Edit
+                </button>
+              )}
+              {username === blog.author && (
+                <button
+                  onClick={() => handleDelete(blog.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              )}
             </div>
+          )}
+
+          {isModalOpen && (
+            <BlogEditModal blogId={currentBlogId} closeModal={closeModal} />
           )}
         </>
       ) : (

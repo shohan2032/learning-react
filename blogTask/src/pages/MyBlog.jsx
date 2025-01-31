@@ -13,6 +13,9 @@ function MyBlog() {
   const [currentBlogId, setCurrentBlogId] = useState(null);
   const navigate = useNavigate();
 
+  const sortedMyBlogs = [...myBlogs].sort((a, b) => b.id - a.id);
+  
+
   const truncateContent = (content) => {
     return (
       content.split(" ").slice(0, 100).join(" ") +
@@ -58,15 +61,38 @@ function MyBlog() {
     dispatch(filterBlogsByAuthor({ author: username }));
   };
 
+  const getRelativeTime = (timestamp) => {
+    const now = new Date();
+    const createdAt = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - createdAt) / 1000);
+
+    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} days ago`;
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} months ago`;
+
+    const diffInYears = Math.floor(diffInMonths / 12);
+    return `${diffInYears} years ago`;
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
         My Blogs
       </h2>
-      {myBlogs.length === 0 ? (
+      {sortedMyBlogs.length === 0 ? (
         <p className="text-center text-gray-500">No blogs found.</p>
       ) : (
-        myBlogs.map((blog) => (
+        sortedMyBlogs.map((blog) => (
           <div
             key={blog.id}
             className="bg-white shadow-md rounded-lg p-5 mb-4 hover:bg-gray-100 transition"
@@ -82,7 +108,13 @@ function MyBlog() {
               Title: {blog.title}
             </h3>
             <p className="text-gray-700 mt-2">Content: {truncateContent(blog.content)}</p>
+            <p className="text-black text-xl font-semibold">
+              Published: {getRelativeTime(blog.id)}
+            </p>
             <h3 className="text-black-500 font-semibold">This blog is {blog.private?"private":"public"}</h3>
+            <p className="text-gray-500 text-sm font-semibold">
+              Estimate Reading Time: {blog.estimateReadingTime}
+            </p>
             <div className="flex justify-between items-center mt-4">
               <p className="text-gray-500">Likes: {blog.likeCount}</p>
               
