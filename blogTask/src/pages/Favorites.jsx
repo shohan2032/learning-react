@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFavorite } from "../slices/blog";
-
+import { useNavigate } from "react-router-dom";
 function Favorites() {
   const dispatch = useDispatch();
   const username = useSelector((state) => state.auth.user);
-  const [randomNumber, setRandomNumber] = useState(100);
+  const navigate = useNavigate();
+  const truncateContent = (content) => {
+    return (
+      content.split(" ").slice(0, 100).join(" ") +
+      (content.split(" ").length > 100 ? "..." : "")
+    );
+  };
 
-  useEffect(() => {
-    setRandomNumber(Math.floor(Math.random() * 1000 + 1));
-  }, []);
-
-  
   const favoriteBlogsId = useSelector(
     (state) => state.favoriteBlogs.favoriteBlogs.get(username) || []
   );
@@ -20,7 +21,7 @@ function Favorites() {
 
   const favoriteBlogs = favoriteBlogsId
     .map((blogId) => allBlogs.find((b) => b.id === blogId))
-    .filter(Boolean); 
+    .filter(Boolean);
 
   const handleRemoveFavorite = (blogId) => {
     dispatch(removeFavorite({ username, blogId }));
@@ -50,7 +51,7 @@ function Favorites() {
             <h3 className="text-2xl font-bold text-gray-900">
               Title: {blog.title}
             </h3>
-            <p className="text-gray-700 mt-2">Content: {blog.content}</p>
+            <p className="text-gray-700 mt-2">Content: {truncateContent(blog.content)}</p>
             <div className="flex justify-between items-center mt-4">
               <p className="text-gray-500">Likes: {blog.likeCount}</p>
               <div className="flex space-x-4">
@@ -59,6 +60,12 @@ function Favorites() {
                   className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
                 >
                   Remove from Favorites
+                </button>
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md transition"
+                  onClick={() => navigate(`/blog-details/${blog.id}`)}
+                >
+                  Details
                 </button>
               </div>
             </div>

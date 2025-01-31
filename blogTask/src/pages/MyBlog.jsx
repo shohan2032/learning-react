@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteBlog, filterBlogsByAuthor } from "../slices/blog";
 import BlogEditModal from "./BlogEditModal";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 function MyBlog() {
   const dispatch = useDispatch();
@@ -10,11 +11,17 @@ function MyBlog() {
   const myBlogs = useSelector((state) => state.favoriteBlogs.myBlogs);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBlogId, setCurrentBlogId] = useState(null);
-  const [randomNumber, setRandomNumber] = useState(100);
+  const navigate = useNavigate();
+
+  const truncateContent = (content) => {
+    return (
+      content.split(" ").slice(0, 100).join(" ") +
+      (content.split(" ").length > 100 ? "..." : "")
+    );
+  };
 
   useEffect(() => {
     dispatch(filterBlogsByAuthor({ author: username }));
-    setRandomNumber(Math.floor(Math.random() * 1000 + 1));
   }, [dispatch, username]);
 
   const handleDelete = (blogId) => {
@@ -74,10 +81,18 @@ function MyBlog() {
             <h3 className="text-2xl font-bold text-gray-900">
               Title: {blog.title}
             </h3>
-            <p className="text-gray-700 mt-2">Content: {blog.content}</p>
+            <p className="text-gray-700 mt-2">Content: {truncateContent(blog.content)}</p>
+            <h3 className="text-black-500 font-semibold">This blog is {blog.private?"private":"public"}</h3>
             <div className="flex justify-between items-center mt-4">
               <p className="text-gray-500">Likes: {blog.likeCount}</p>
+              
               <div className="flex space-x-4">
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md transition"
+                  onClick={() => navigate(`/blog-details/${blog.id}`)}
+                >
+                  Details
+                </button>
                 <button
                   onClick={() => handleEdit(blog.id)}
                   className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition"

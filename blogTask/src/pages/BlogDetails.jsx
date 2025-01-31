@@ -43,7 +43,7 @@ function BlogDetails() {
       setLocalLikeCount(blog.likeCount);
     }
   }, [blog]);
-  console.log(localLikeCount);
+  // console.log(localLikeCount);
   const handleFavoriteClick = async () => {
     if (isFavorite) {
       const result = await Swal.fire({
