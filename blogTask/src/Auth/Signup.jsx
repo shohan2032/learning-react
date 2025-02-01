@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { signup, clearError, resetSignUpSuccess } from "../slices/authSlice";
+import Swal from "sweetalert2";
 function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -12,6 +13,14 @@ function Signup() {
 
   const handleSignup = (event) => {
     event.preventDefault();
+    if(!username.trim()) {
+      Swal.fire("Error", "Username cannot be empty!", "error");
+      return;
+    }
+    if(!password.trim()) {
+      Swal.fire("Error", "Password cannot be empty!", "error");
+      return;
+    }
     setLoading(true);
     dispatch(signup({ username, password }));
     setLoading(false);

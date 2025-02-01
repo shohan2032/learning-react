@@ -22,20 +22,27 @@ function Main() {
   }, [searchTerm, dispatch]);
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+    <div className="container mx-auto px-6 py-8">
+      {/* Search Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <SearchBar searchText={searchTerm} onChangeSearchText={setSearchTerm} />
       </div>
 
+      {/* No Blogs Found Message */}
       {filteredBlogs.length === 0 && searchTerm !== "" && (
-        <p className="text-center text-xl">No blogs found.</p>
+        <p className="text-center text-2xl font-semibold text-gray-600 mt-6">
+          🚀 No blogs found. Try a different search!
+        </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 my-6">
+      {/* Blog Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 my-6">
         {(searchTerm ? filteredBlogs : allBlogs)
-          .filter((blog) => !blog.private) 
+          .filter((blog) => !blog.private)
           .map((blog) => (
-            <BlogCard key={blog.id} blog={blog} />
+            <div key={blog.id} className="transform transition hover:scale-105">
+              <BlogCard blog={blog} />
+            </div>
           ))}
       </div>
     </div>
