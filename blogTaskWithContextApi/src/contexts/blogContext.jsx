@@ -1,16 +1,18 @@
 import { createContext, useReducer } from "react";
 
+const storedFavorites = JSON.parse(localStorage.getItem("favoriteBlogs")) || {};
+const allBlogs = JSON.parse(localStorage.getItem("allBlogs")) || [];
+const myBlogs = JSON.parse(localStorage.getItem("myBlogs")) || [];
+const filteredBlogs = JSON.parse(localStorage.getItem("filtereddBlogs")) || [];
+const BlogById = JSON.parse(localStorage.getItem("BlogById")) || null;
+const allLikedBlogs = JSON.parse(localStorage.getItem("allLikedBlogs")) || [];
 const initialState = {
-  favoriteBlogs: new Map(
-    Object.entries(JSON.parse(localStorage.getItem("favoriteBlogs") || "{}"))
-  ),
-  allLikedBlogs: new Map(
-    Object.entries(JSON.parse(localStorage.getItem("allLikedBlogs") || "{}"))
-  ),
-  allBlogs: JSON.parse(localStorage.getItem("allBlogs") || "[]"),
-  myBlogs: JSON.parse(localStorage.getItem("myBlogs") || "[]"),
-  filteredBlogs: JSON.parse(localStorage.getItem("filteredBlogs") || "[]"),
-  BlogById: JSON.parse(localStorage.getItem("BlogById") || "[]"),
+  favoriteBlogs: new Map(Object.entries(storedFavorites)),
+  allLikedBlogs: new Map(Object.entries(allLikedBlogs)),
+  allBlogs: allBlogs,
+  myBlogs: myBlogs,
+  filteredBlogs: filteredBlogs,
+  BlogById: BlogById,
   error: null,
 };
 
@@ -126,25 +128,21 @@ function blogReducer(state, action) {
     }
 
     case "filteredBlogById": {
-      const { blogId } = action.payload;
-      const BlogById = state.allBlogs.find((blog) => blog.id === blogId);
-
+      console.log(action.payload);
+      const BlogById = state.allBlogs.find(
+        (blog) => blog.id === action.payload
+      );
+      console.log(BlogById);
       localStorage.setItem("BlogById", JSON.stringify(BlogById));
 
       return { ...state, BlogById };
     }
 
     case "filterBlogsBySearchTerm": {
-      const { searchTerm } = action.payload;
-
       const filteredBlogs = state.allBlogs.filter(
         (blog) =>
-          (searchTerm
-            ? blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-            : false) ||
-          (searchTerm
-            ? blog.content.toLowerCase().includes(searchTerm.toLowerCase())
-            : false)
+          blog.title.toLowerCase().includes(action.payload.toLowerCase()) ||
+          blog.content.toLowerCase().includes(action.payload.toLowerCase())
       );
 
       localStorage.setItem("filteredBlogs", JSON.stringify(filteredBlogs));

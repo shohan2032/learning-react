@@ -54,7 +54,14 @@ const blogSlice = createSlice({
       }
     },
     addBlog: (state, action) => {
-      const { title, author, content, isPrivate, imageId, estimateReadingTime } = action.payload;
+      const {
+        title,
+        author,
+        content,
+        isPrivate,
+        imageId,
+        estimateReadingTime,
+      } = action.payload;
       // console.log(action.payload);
       const blog = {
         id: Date.now(),
@@ -64,7 +71,7 @@ const blogSlice = createSlice({
         likeCount: 0,
         private: isPrivate,
         imageId: imageId,
-        estimateReadingTime
+        estimateReadingTime,
       };
 
       state.allBlogs.push(blog);
@@ -119,17 +126,15 @@ const blogSlice = createSlice({
     filteredBlogById: (state, action) => {
       const { blogId } = action.payload;
       state.BlogById = state.allBlogs.find((b) => b.id === blogId);
-      localStorage.setItem(
-        "filteredBlogById",
-        JSON.stringify(state.BlogById)
-      );
+      localStorage.setItem("BlogById", JSON.stringify(state.BlogById));
       state.error = null;
     },
     filterBlogsBySearchTerm: (state, action) => {
       const { searchTerm } = action.payload;
-      state.filteredBlogs = state.allBlogs.filter((b) =>
-        b.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.content.toLowerCase().includes(searchTerm.toLowerCase())
+      state.filteredBlogs = state.allBlogs.filter(
+        (b) =>
+          b.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          b.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
       localStorage.setItem(
         "filteredBlogs",
@@ -161,14 +166,14 @@ const blogSlice = createSlice({
         const userLikedBlogs = state.allLikedBlogs.get(username);
         state.allLikedBlogs.set(
           username,
-          userLikedBlogs.filter((id) => id!== blogId)
+          userLikedBlogs.filter((id) => id !== blogId)
         );
 
         localStorage.setItem(
           "allLikedBlogs",
           JSON.stringify(Object.fromEntries(state.allLikedBlogs))
         );
-      } 
+      }
     },
     clearError: (state) => {
       state.error = null;

@@ -39,7 +39,7 @@ function Signup() {
           Already have an account?{" "}
           <Link
             to="/login"
-            onClick={() => dispatch({ type: "CLEAR_ERROR" })}
+            onClick={() => dispatch(clearError())}
             className="text-blue-500 font-medium hover:underline"
           >
             Sign In
@@ -63,7 +63,6 @@ function Signup() {
             <input
               id="username"
               type="text"
-              resetSignUpSuccess
               placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}

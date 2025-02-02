@@ -112,7 +112,7 @@ function Login() {
           Don't have an account?{" "}
           <Link
             to="/signup"
-            onClick={() => dispatch({ type: "CLEAR_ERROR" })}
+            onClick={() => dispatch(clearError())}
             className="text-blue-500 hover:underline font-semibold"
           >
             Sign Up

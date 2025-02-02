@@ -168,8 +168,6 @@ function MyBlog() {
 
 export default MyBlog;
 
-
-
 // import React, { useState, useEffect, useContext } from "react";
 // import { AuthContext } from "../context/AuthContext";
 // import { BlogContext } from "../context/BlogContext";
@@ -180,7 +178,7 @@ export default MyBlog;
 // function MyBlog() {
 //   const { state: authState } = useContext(AuthContext);
 //   const { state: blogState, dispatch: blogDispatch } = useContext(BlogContext);
-  
+
 //   const username = authState.user;
 //   const myBlogs = blogState.myBlogs;
 //   const [isModalOpen, setIsModalOpen] = useState(false);

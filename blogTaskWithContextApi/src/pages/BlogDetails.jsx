@@ -76,7 +76,7 @@ function BlogDetails() {
       dispatch({
         type: "dislikeBlog",
         payload: { blogId: blogIdInNumber },
-      })
+      });
       setLocalLikeCount(localLikeCount - 1);
       // Swal.fire("Unliked!", "", "success");
       hasLiked = false;
@@ -88,7 +88,7 @@ function BlogDetails() {
       dispatch({
         type: "likeBlog",
         payload: { blogId: blogIdInNumber },
-      })
+      });
       setLocalLikeCount(localLikeCount + 1);
       // Swal.fire("Liked!", "", "success");
       hasLiked = true;
@@ -109,7 +109,7 @@ function BlogDetails() {
         dispatch({
           type: "deleteBlog",
           payload: { blogId },
-        })
+        });
         Swal.fire({
           title: "Deleted!",
           text: "Your blog has been deleted.",
@@ -132,57 +132,47 @@ function BlogDetails() {
     dispatch({
       type: "filteredBlogById",
       payload: blogIdInNumber,
-    })
+    });
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       {blog ? (
         <>
-          <h1 className="text-3xl font-bold text-center mb-6">{blog.title}</h1>
+          <h1 className="text-4xl font-extrabold text-center text-indigo-600 mb-6">
+            {blog.title}
+          </h1>
           <img
-            src={`https://picsum.photos/seed/${blog.imageId}/600/400`}
+            src={`https://picsum.photos/seed/${blog.imageId}/800/500`}
             alt="Blog Cover"
-            className="w-full rounded-xl shadow-lg mb-6"
+            className="w-full rounded-xl shadow-xl mb-6"
           />
           <div className="text-center">
-            <p className="text-lg mb-2">
-              <span className="font-semibold">Author:</span> {blog.author}
+            <p className="text-xl mb-2 text-gray-800">
+              <span className="font-semibold text-indigo-700">Author:</span>{" "}
+              {blog.author}
             </p>
             <p className="text-gray-500 text-sm font-semibold">
               Published:{" "}
               {formatDistanceToNow(new Date(blog.id), { addSuffix: true })}
             </p>
             <p className="text-gray-500 text-sm font-semibold">
-              Estimate Reading Time: {blog.estimateReadingTime}
+              Estimated Reading Time: {blog.estimateReadingTime}
             </p>
           </div>
-          <p className="text-gray-700 leading-relaxed mb-6 font-semibold">
-            {" "}
-            Content:
-            <hr /> {blog.content}
-          </p>
-          <hr />
-          <div className="text-gray-700 text-center text-lg mb-6">
-            ❤️ {localLikeCount} Likes
+          <div className="bg-gray-100 p-4 rounded-lg mt-4">
+            <p className="text-lg text-gray-700 leading-relaxed mb-6 font-semibold">
+              Content:
+              <hr /> {blog.content}
+            </p>
           </div>
 
-          {username && (
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={handleFavoriteClick}
-                className={`px-6 py-2 rounded-lg font-medium shadow-md transition ${
-                  isFavorite
-                    ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                {isFavorite ? "Remove from Favorites" : "Save to Favorites"}
-              </button>
-
+          <div className="flex justify-center items-center space-x-4 my-6">
+            <div className="flex items-center space-x-2">
+              <span className="text-xl text-gray-700">❤️ {localLikeCount}</span>
               <button
                 onClick={handleLikeClick}
-                className={`px-6 py-2 rounded-lg font-medium shadow-md transition ${
+                className={`px-4 py-2 rounded-lg font-semibold shadow-md transition ${
                   hasLiked
                     ? "bg-blue-500 hover:bg-blue-600 text-white"
                     : "bg-gray-500 hover:bg-gray-600 text-white"
@@ -190,22 +180,34 @@ function BlogDetails() {
               >
                 {hasLiked ? "Dislike" : "Like"}
               </button>
-              {username === blog.author && (
-                <button
-                  onClick={() => handleEdit(blog.id)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition"
-                >
-                  Edit
-                </button>
-              )}
-              {username === blog.author && (
-                <button
-                  onClick={() => handleDelete(blog.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-                >
-                  Delete
-                </button>
-              )}
+            </div>
+
+            <button
+              onClick={handleFavoriteClick}
+              className={`px-6 py-2 rounded-lg font-semibold shadow-md transition ${
+                isFavorite
+                  ? "bg-red-500 hover:bg-red-600 text-white"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
+            >
+              {isFavorite ? "Remove from Favorites" : "Save to Favorites"}
+            </button>
+          </div>
+
+          {username === blog.author && (
+            <div className="flex justify-center space-x-4 mt-6">
+              <button
+                onClick={() => handleEdit(blog.id)}
+                className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(blog.id)}
+                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
             </div>
           )}
 
@@ -214,7 +216,9 @@ function BlogDetails() {
           )}
         </>
       ) : (
-        <p className="text-center text-xl">Loading blog details...</p>
+        <p className="text-center text-xl text-gray-600">
+          Loading blog details...
+        </p>
       )}
     </div>
   );
@@ -227,18 +231,19 @@ export default BlogDetails;
 // import Swal from "sweetalert2";
 // import { formatDistanceToNow } from "date-fns";
 // import BlogEditModal from "./BlogEditModal";
-// import { AuthContext } from "../context/AuthContext";  // Import AuthContext
-// import { BlogContext } from "../context/BlogContext";  // Import BlogContext
-
+// import AuthContext from "../contexts/authContext";
+// import BlogContext from "../contexts/blogContext";
 // function BlogDetails() {
 //   const { blogId } = useParams();
+//   // console.log(blogId);
 //   const { state: authState } = useContext(AuthContext); // Access user state from AuthContext
 //   const { state: blogState, dispatch } = useContext(BlogContext); // Access blog state and dispatch from BlogContext
 //   const [isModalOpen, setIsModalOpen] = useState(false);
 //   const [currentBlogId, setCurrentBlogId] = useState(null);
 //   const navigate = useNavigate();
 
-//   const username = authState.user; // Get the username from AuthContext
+//   const username = authState.user;
+//   // console.log(username);
 //   const blog = blogState.BlogById;
 //   const favoriteBlogs = blogState.favoriteBlogs.get(username) || [];
 //   const allLikedBlogs = blogState.allLikedBlogs.get(username) || [];
@@ -250,15 +255,15 @@ export default BlogDetails;
 //   const [localLikeCount, setLocalLikeCount] = useState(0);
 
 //   useEffect(() => {
-//     dispatch({ type: "FETCH_BLOG_BY_ID", payload: blogIdInNumber });  // Action to fetch blog by ID
-//   }, [dispatch, blogIdInNumber]);
+//     dispatch({ type: "filteredBlogById", payload: blogIdInNumber });
+//   }, [dispatch]);
 
 //   useEffect(() => {
 //     if (blog) {
 //       setLocalLikeCount(blog.likeCount);
 //     }
 //   }, [blog]);
-
+//   // console.log(blog);
 //   const handleFavoriteClick = async () => {
 //     if (isFavorite) {
 //       const result = await Swal.fire({
@@ -271,21 +276,37 @@ export default BlogDetails;
 //       });
 
 //       if (result.isConfirmed) {
-//         dispatch({ type: "REMOVE_FAVORITE", payload: { username, blogId: blogIdInNumber } });
-//         Swal.fire("Removed!", "This blog has been removed from favorites.", "success");
+//         dispatch({
+//           type: "REMOVE_FAVORITE",
+//           payload: { username, blogId: blogIdInNumber },
+//         });
+//         Swal.fire(
+//           "Removed!",
+//           "This blog has been removed from favorites.",
+//           "success"
+//         );
 //       }
 //     } else {
-//       dispatch({ type: "ADD_FAVORITE", payload: { username, blogId: blogIdInNumber } });
+//       dispatch({
+//         type: "ADD_FAVORITE",
+//         payload: { username, blogId: blogIdInNumber },
+//       });
 //     }
 //   };
 
 //   const handleLikeClick = () => {
 //     if (hasLiked) {
-//       dispatch({ type: "REMOVE_LIKED_BLOG", payload: { username, blogId: blogIdInNumber } });
+//       dispatch({
+//         type: "REMOVE_LIKED_BLOG",
+//         payload: { username, blogId: blogIdInNumber },
+//       });
 //       dispatch({ type: "DISLIKE_BLOG", payload: blogIdInNumber });
 //       setLocalLikeCount(localLikeCount - 1);
 //     } else {
-//       dispatch({ type: "ADD_LIKED_BLOG", payload: { username, blogId: blogIdInNumber } });
+//       dispatch({
+//         type: "ADD_LIKED_BLOG",
+//         payload: { username, blogId: blogIdInNumber },
+//       });
 //       dispatch({ type: "LIKE_BLOG", payload: blogIdInNumber });
 //       setLocalLikeCount(localLikeCount + 1);
 //     }
@@ -322,7 +343,7 @@ export default BlogDetails;
 //   const closeModal = () => {
 //     setIsModalOpen(false);
 //     setCurrentBlogId(null);
-//     dispatch({ type: "FETCH_BLOG_BY_ID", payload: blogIdInNumber });  // Re-fetch the blog data after editing
+//     dispatch({ type: "FETCH_BLOG_BY_ID", payload: blogIdInNumber }); // Re-fetch the blog data after editing
 //   };
 
 //   return (
@@ -340,7 +361,8 @@ export default BlogDetails;
 //               <span className="font-semibold">Author:</span> {blog.author}
 //             </p>
 //             <p className="text-gray-500 text-sm font-semibold">
-//               Published: {formatDistanceToNow(new Date(blog.id), { addSuffix: true })}
+//               Published:{" "}
+//               {formatDistanceToNow(new Date(blog.id), { addSuffix: true })}
 //             </p>
 //             <p className="text-gray-500 text-sm font-semibold">
 //               Estimate Reading Time: {blog.estimateReadingTime}
@@ -359,7 +381,9 @@ export default BlogDetails;
 //               <button
 //                 onClick={handleFavoriteClick}
 //                 className={`px-6 py-2 rounded-lg font-medium shadow-md transition ${
-//                   isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : "bg-green-500 hover:bg-green-600 text-white"
+//                   isFavorite
+//                     ? "bg-red-500 hover:bg-red-600 text-white"
+//                     : "bg-green-500 hover:bg-green-600 text-white"
 //                 }`}
 //               >
 //                 {isFavorite ? "Remove from Favorites" : "Save to Favorites"}
@@ -368,7 +392,9 @@ export default BlogDetails;
 //               <button
 //                 onClick={handleLikeClick}
 //                 className={`px-6 py-2 rounded-lg font-medium shadow-md transition ${
-//                   hasLiked ? "bg-blue-500 hover:bg-blue-600 text-white" : "bg-gray-500 hover:bg-gray-600 text-white"
+//                   hasLiked
+//                     ? "bg-blue-500 hover:bg-blue-600 text-white"
+//                     : "bg-gray-500 hover:bg-gray-600 text-white"
 //                 }`}
 //               >
 //                 {hasLiked ? "Dislike" : "Like"}

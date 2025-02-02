@@ -21,6 +21,7 @@ function BlogDetails() {
   const { blogId } = useParams();
   const username = useSelector((state) => state.auth.user);
   const blog = useSelector((state) => state.favoriteBlogs.BlogById);
+  console.log(blog);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBlogId, setCurrentBlogId] = useState(null);
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ function BlogDetails() {
       setLocalLikeCount(blog.likeCount);
     }
   }, [blog]);
-
+  console.log(blog);
   const handleFavoriteClick = async () => {
     if (isFavorite) {
       const result = await Swal.fire({

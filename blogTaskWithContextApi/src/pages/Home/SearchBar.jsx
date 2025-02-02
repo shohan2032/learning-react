@@ -2,14 +2,14 @@ import React from "react";
 
 function SearchBar({ searchText, onChangeSearchText }) {
   return (
-    <form className="bg-white shadow-md rounded-lg p-6 mb-4 w-2/3">
-      <div className="mb-4">
+    <form className="bg-white/80 backdrop-blur-md shadow-lg rounded-full px-6 py-3 w-full max-w-lg">
+      <div className="flex items-center space-x-3">
         <input
           type="text"
-          placeholder="Search For Blogs..."
+          placeholder="🔍 Search for blogs..."
           value={searchText}
           onChange={(e) => onChangeSearchText(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          className="w-full bg-transparent border-none focus:outline-none text-gray-700 text-lg placeholder-gray-500"
         />
       </div>
     </form>
