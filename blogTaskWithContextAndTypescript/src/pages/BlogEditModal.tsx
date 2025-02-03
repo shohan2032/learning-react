@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import Swal from "sweetalert2";
 import BlogContext from "../contexts/blogContext";
-
-function BlogEditModal({ blogId, closeModal }) {
+interface BlogEditModalProps {
+  blogId: number;
+  closeModal: () => void;
+}
+const BlogEditModal: React.FC<BlogEditModalProps> = ({ blogId, closeModal }) => {
   const { state, dispatch } = useContext(BlogContext);
   const blog = state.allBlogs.find((b) => b.id === blogId);
   const [formData, setFormData] = useState({
@@ -19,13 +22,13 @@ function BlogEditModal({ blogId, closeModal }) {
         title: blog.title,
         author: blog.author,
         content: blog.content,
-        isPrivate: blog.private,
-        estimateReadingTime: blog.estimateReadingTime,
+        isPrivate: blog.isPrivate,
+        estimateReadingTime: blog.estimateReadingTime ?? 1,
       });
     }
   }, [blog]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -33,7 +36,7 @@ function BlogEditModal({ blogId, closeModal }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!formData.title.trim()) {
       Swal.fire("Error", "Title is required!", "error");
@@ -100,7 +103,7 @@ function BlogEditModal({ blogId, closeModal }) {
               value={formData.content}
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
-              rows="5"
+              rows={5}
               required
             />
           </div>

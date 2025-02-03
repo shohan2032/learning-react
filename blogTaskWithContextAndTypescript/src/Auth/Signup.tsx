@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import AuthContext from "../contexts/authContext";
 import Swal from "sweetalert2";
@@ -10,13 +10,13 @@ function Signup() {
   const [loading, setLoading] = useState(false);
   const { signUpSuccess, error } = state;
 
-  const handleSignup = (event) => {
+  const handleSignup = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!username.trim()) {
+    if(!username.trim()) {
       Swal.fire("Error", "Username cannot be empty!", "error");
       return;
     }
-    if (!password.trim()) {
+    if(!password.trim()) {
       Swal.fire("Error", "Password cannot be empty!", "error");
       return;
     }
@@ -48,7 +48,7 @@ function Signup() {
           Already have an account?{" "}
           <Link
             to="/login"
-            onClick={() => dispatch(clearError())}
+            onClick={() => dispatch({type: "CLEAR_ERROR"})}
             className="text-blue-500 font-medium hover:underline"
           >
             Sign In

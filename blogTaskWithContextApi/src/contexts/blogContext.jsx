@@ -128,11 +128,11 @@ function blogReducer(state, action) {
     }
 
     case "filteredBlogById": {
-      console.log(action.payload);
+      // console.log(action.payload);
       const BlogById = state.allBlogs.find(
-        (blog) => blog.id === action.payload
+        (blog) => blog.id === action.payload.blogId
       );
-      console.log(BlogById);
+      // console.log(BlogById);
       localStorage.setItem("BlogById", JSON.stringify(BlogById));
 
       return { ...state, BlogById };

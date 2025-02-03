@@ -1,7 +1,6 @@
-import React from "react";
 import Main from "./Main";
 function Home() {
-  console.log("home a ashce")
+  // console.log("home a ashce")
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100">
       {/* Hero Section */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import AuthContext from "../contexts/authContext";
@@ -8,18 +8,18 @@ function AddBlog() {
   const { state } = useContext(AuthContext);
   const { dispatch } = useContext(BlogContext);
   const navigate = useNavigate();
-  const username = state.user;
+  const username = state.user || "";
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [estimateReadingTime, setEstimateReadingTime] = useState(10);
-  const [randomNumber, setRandomNumber] = useState(100);
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [isPrivate, setIsPrivate] = useState<boolean>(false);
+  const [estimateReadingTime, setEstimateReadingTime] = useState<number>(10);
+  const [randomNumber, setRandomNumber] = useState<number>(100);
   useEffect(() => {
     setRandomNumber(Math.floor(Math.random() * 1000 + 1));
-  }, []);
+  },[]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -58,7 +58,7 @@ function AddBlog() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             placeholder="Enter blog title"
             required
@@ -69,9 +69,9 @@ function AddBlog() {
           <label className="block font-semibold text-gray-700">Content</label>
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            rows="6"
+            rows={6}
             placeholder="Write your blog content..."
             required
           ></textarea>
@@ -85,7 +85,7 @@ function AddBlog() {
             type="number"
             min={1}
             value={estimateReadingTime}
-            onChange={(e) => setEstimateReadingTime(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEstimateReadingTime(Number(e.target.value))}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             placeholder="Enter estimate reading time"
             required

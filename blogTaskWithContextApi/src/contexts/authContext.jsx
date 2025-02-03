@@ -18,18 +18,34 @@ function authReducer(state, action) {
           error: "Password must be at least 5 characters long",
         };
       }
-      const { username, password } = action.payload;
-      if (state.users.has(username)) {
-        return { ...state, error: "Username already exists" };
+
+      // const { username, password } = action.payload;
+
+      if (state.users.has(action.payload.username)) {
+        return {
+          ...state,
+          error: "Username already exists",
+          signUpSuccess: false,
+        };
       }
 
-      state.users.set(username, password);
+      console.log("User created successfully");
+
+      // Create a new Map instead of mutating state directly
+      const updatedUsers = new Map(state.users);
+      updatedUsers.set(action.payload.username, action.payload.password);
+
       localStorage.setItem(
         "users",
-        JSON.stringify(Object.fromEntries(state.users))
+        JSON.stringify(Object.fromEntries(updatedUsers))
       );
 
-      return { ...state, signUpSuccess: true, error: null };
+      return {
+        ...state,
+        users: updatedUsers,
+        signUpSuccess: true,
+        error: null,
+      };
 
     case "RESET_SIGNUP":
       return { ...state, signUpSuccess: false };

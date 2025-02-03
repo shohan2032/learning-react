@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../contexts/authContext"; // Import AuthContext
 
 function Login() {
-  console.log("Login a ashce")
   const navigate = useNavigate();
   const { state, dispatch } = useContext(AuthContext);
   const { user, error, signUpSuccess } = state;
 
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [showSignUpSuccessMessage, setShowSignUpSuccessMessage] =
     useState(false);
 
@@ -21,7 +20,7 @@ function Login() {
     }
   }, [signUpSuccess, dispatch]);
 
-  const handleLogin = (event) => {
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     dispatch({ type: "LOGIN", payload: { username, password } });
@@ -113,7 +112,7 @@ function Login() {
           Don't have an account?{" "}
           <Link
             to="/signup"
-            onClick={() => dispatch(clearError())}
+            onClick={() => dispatch({ type: "CLEAR_ERROR" })}
             className="text-blue-500 hover:underline font-semibold"
           >
             Sign Up
