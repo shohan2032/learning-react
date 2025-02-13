@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
-import UseDebounce from "../../components/hooks/UseDebounce";
+// import UseDebounce from "../../components/hooks/UseDebounce";
 import CategoryWiseMealCard from "./CategoryWiseMealCard";
 import MealCard from "./MealCard";
 
@@ -15,7 +15,7 @@ function Main() {
   const [error, setError] = useState("");
   const [savedMeal, setSavedMeal] = useState([]);
   const [isMealCategory, setIsMealCategory] = useState(true);
-  
+
   const mealAreas = [
     "American",
     "British",
