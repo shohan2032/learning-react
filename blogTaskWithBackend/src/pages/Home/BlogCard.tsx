@@ -1,23 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { Blog } from "../../interface/reduxInterface";
+
 interface BlogCardProps {
   blog: Blog;
 }
 
-const BlogCard:React.FC<BlogCardProps> = ({ blog }) =>  {
+const BlogCard: React.FC<BlogCardProps> = ({ blog }) => {
   const navigate = useNavigate();
 
-  const truncateContent = (content:string): string => {
+  const truncateContent = (content: string): string => {
     return (
       content.split(" ").slice(0, 100).join(" ") +
       (content.split(" ").length > 100 ? "..." : "")
     );
   };
 
-  const getRelativeTime = (timestamp:number) => {
+  const getRelativeTime = (timestamp: Date) => {
     const now = new Date();
     const createdAt = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
+    const diffInSeconds = Math.floor(
+      (now.getTime() - createdAt.getTime()) / 1000
+    );
 
     if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
     const diffInMinutes = Math.floor(diffInSeconds / 60);
@@ -38,22 +41,26 @@ const BlogCard:React.FC<BlogCardProps> = ({ blog }) =>  {
       <div className="relative">
         <img
           className="w-full h-48 object-cover"
-          src={`https://picsum.photos/seed/${blog.imageId}/600/400`}
+          src={blog.imageUrl || "https://via.placeholder.com/300"}
           alt="Blog Cover"
         />
-        <div className="absolute bottom-0 left-0 bg-black/60 text-white p-4 w-full">
+        <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white">
           <h2 className="text-lg font-semibold truncate">{blog.title}</h2>
         </div>
       </div>
 
       {/* Blog Content */}
-      <div className="p-6 bg-gray-50 flex-grow flex flex-col">
-        <p className="text-sm text-gray-700 mb-4 flex-grow">
+      <div className="p-4 bg-gray-50 flex-grow flex flex-col">
+        <p className="text-sm text-gray-700 mb-3 flex-grow">
           {truncateContent(blog.content)}
         </p>
-        <p className="text-gray-800 font-medium">👤 Author: {blog.author}</p>
+        <p className="text-gray-800 font-medium">
+          👤 Author: {blog.authorName}
+        </p>
         <p className="text-gray-800 font-medium">❤️ Likes: {blog.likeCount}</p>
-        <p className="text-gray-500 text-sm">🕒 {getRelativeTime(blog.id)}</p>
+        <p className="text-gray-500 text-sm">
+          🕒 {getRelativeTime(blog.createdAt)}
+        </p>
         <p className="text-gray-500 text-sm">
           📖 Estimated Read Time: {blog.estimateReadingTime} min
         </p>
@@ -68,6 +75,6 @@ const BlogCard:React.FC<BlogCardProps> = ({ blog }) =>  {
       </div>
     </div>
   );
-}
+};
 
 export default BlogCard;

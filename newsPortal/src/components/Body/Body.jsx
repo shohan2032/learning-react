@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import Filtering from "./Filtering/Filtering";
 import NewsCard from "./NewsCard/NewsCard";
 import Pagination from "./Pagination/Pagination";

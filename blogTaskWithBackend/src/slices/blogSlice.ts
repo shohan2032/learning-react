@@ -116,12 +116,12 @@ const blogSlice = createSlice({
       }
     },
 
-    filterBlogsByAuthor: (state, action: PayloadAction<{ author: string }>) => {
-      state.myBlogs = state.allBlogs.filter(
-        (b) => b.author === action.payload.author
-      );
-      localStorage.setItem("myBlogs", JSON.stringify(state.myBlogs));
-    },
+    // filterBlogsByAuthor: (state, action: PayloadAction<{ author: string }>) => {
+    //   state.myBlogs = state.allBlogs.filter(
+    //     (b) => b.author === action.payload.author
+    //   );
+    //   localStorage.setItem("myBlogs", JSON.stringify(state.myBlogs));
+    // },
 
     filterBlogsBySearchTerm: (
       state,
@@ -205,7 +205,6 @@ export const {
   dislikeBlog,
   deleteBlog,
   updateBlog,
-  filterBlogsByAuthor,
   filterBlogsBySearchTerm,
   filteredBlogById,
   addLikedBlog,

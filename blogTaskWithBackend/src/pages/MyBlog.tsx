@@ -1,32 +1,91 @@
 import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteBlog, filterBlogsByAuthor } from "../slices/blogSlice";
+import { useSelector } from "react-redux";
 import BlogEditModal from "./BlogEditModal";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { Store } from "../interface/reduxInterface";
+import { Store, Blog } from "../interface/reduxInterface";
+import conf from "../conf/conf";
 function MyBlog() {
-  const dispatch = useDispatch();
-  const username = useSelector((state:Store) => state.auth.user)||"";
-  const myBlogs = useSelector((state:Store) => state.favoriteBlogs.myBlogs);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentBlogId, setCurrentBlogId] = useState<any>();
+  const userId = useSelector((state: Store) => state.auth.user.id);
+  const [myBlogs, setMyBlogs] = useState<Blog[]>([]);
+  const [editableBlog, setEditableBlog] = useState<Blog | null>(null);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const sortedMyBlogs = [...myBlogs].sort((a, b) => b.id - a.id);
-
-  const truncateContent = (content:string) => {
+  const truncateContent = (content: string) => {
     return (
       content.split(" ").slice(0, 100).join(" ") +
       (content.split(" ").length > 100 ? "..." : "")
     );
   };
 
-  useEffect(() => {
-    dispatch(filterBlogsByAuthor({ author: username }));
-  }, [dispatch, username]);
+  const getMyBlogs = async () => {
+    setIsLoading(true);
+    setError("");
 
-  const handleDelete = (blogId:number) => {
+    try {
+      const response = await fetch(
+        `${conf.apiUrl}/blog/blogs-by-user?userId=${encodeURIComponent(
+          userId
+        )}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMyBlogs([...data].sort((a, b) => b.id - a.id));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getMyBlogs();
+  }, [userId]);
+
+  const deleteBlog = async (blogId: number) => {
+    setIsLoading(true);
+    setError("");
+    const payload = {
+      blogId: blogId,
+      authorId: userId,
+    };
+    try {
+      const response = await fetch(`${conf.apiUrl}/blog/delete-blog`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      console.log("🚀 ~ deleteBlog ~ response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // const data = await response.json();
+      // console.log(data);
+      setMyBlogs((prevBlogs) => prevBlogs.filter((blog) => blog.id !== blogId));
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete blog!"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = (blogId: number) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -35,35 +94,35 @@ function MyBlog() {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        dispatch(deleteBlog({ blogId }));
+        await deleteBlog(blogId);
         Swal.fire({
           title: "Deleted!",
           text: "Your blog has been deleted.",
           icon: "success",
           confirmButtonText: "Cool",
         });
-        dispatch(filterBlogsByAuthor({ author: username }));
+        // getMyBlogs();
       }
     });
   };
 
-  const handleEdit = (blogId:number) => {
-    setCurrentBlogId(blogId);
-    setIsModalOpen(true);
+  const handleEdit = (blog: Blog) => {
+    setEditableBlog(blog);
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setCurrentBlogId(null);
-    dispatch(filterBlogsByAuthor({ author: username }));
+    setEditableBlog(null);
+    getMyBlogs();
   };
 
-  const getRelativeTime = (timestamp:number) => {
+  const getRelativeTime = (timestamp: Date) => {
     const now = new Date();
     const createdAt = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
+    const diffInSeconds = Math.floor(
+      (now.getTime() - createdAt.getTime()) / 1000
+    );
 
     if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
 
@@ -88,10 +147,24 @@ function MyBlog() {
       <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
         My Blogs
       </h2>
-      {sortedMyBlogs.length === 0 ? (
-        <p className="text-center text-gray-500">No blogs found.</p>
+      {error && (
+        <div className="text-center p-4 mb-6 bg-red-50 rounded-lg">
+          <p className="text-red-600 font-medium">{error}</p>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="flex justify-center my-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+      {myBlogs.length === 0 ? (
+        <p className="text-center text-2xl font-semibold text-gray-600 mt-6">
+          🚀 No blogs found! Click the "Add Blog" button to create your first
+          blog!
+        </p>
       ) : (
-        sortedMyBlogs.map((blog) => (
+        myBlogs.map((blog) => (
           <div
             key={blog.id}
             className="bg-white shadow-md rounded-lg p-5 mb-4 hover:bg-gray-100 transition"
@@ -99,7 +172,7 @@ function MyBlog() {
             <div className="relative">
               <img
                 className="w-full h-48 object-cover"
-                src={`https://picsum.photos/seed/${blog.imageId}/600/400`}
+                src={blog.imageUrl || "https://via.placeholder.com/300"}
                 alt="Blog Cover"
               />
             </div>
@@ -110,7 +183,7 @@ function MyBlog() {
               Content: {truncateContent(blog.content)}
             </p>
             <p className="text-black text-xl font-semibold">
-              Published: {getRelativeTime(blog.id)}
+              Published: {getRelativeTime(blog.createdAt)}
             </p>
             <h3 className="text-black-500 font-semibold">
               This blog is {blog.isPrivate ? "private" : "public"}
@@ -129,7 +202,7 @@ function MyBlog() {
                   Details
                 </button>
                 <button
-                  onClick={() => handleEdit(blog.id)}
+                  onClick={() => handleEdit(blog)}
                   className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition"
                 >
                   Edit
@@ -146,8 +219,8 @@ function MyBlog() {
         ))
       )}
 
-      {isModalOpen && (
-        <BlogEditModal blogId={currentBlogId} closeModal={closeModal} />
+      {editableBlog && (
+        <BlogEditModal blog={editableBlog} closeModal={closeModal} />
       )}
     </div>
   );

@@ -3,7 +3,6 @@ import { AuthState } from "../interface/reduxInterface";
 
 const initialState: AuthState = {
   user: { id: 0, username: "" },
-  error: null,
   signUpSuccess: false,
 };
 
@@ -14,7 +13,6 @@ const authSlice = createSlice({
     // Sign up action
     signup: (state) => {
       state.signUpSuccess = true;
-      state.error = null;
     },
 
     // Reset signup success flag
@@ -27,7 +25,6 @@ const authSlice = createSlice({
       action: PayloadAction<{ id: number; username: string }>
     ) => {
       state.user = action.payload;
-      state.error = null;
     },
 
     // Logout action
@@ -35,17 +32,7 @@ const authSlice = createSlice({
       console.log("logout");
       state.user.id = 0;
       state.user.username = "";
-      state.error = null;
-    },
-
-    setError: (state, action: PayloadAction<{ error: string }>) => {
-      state.error = action.payload.error;
-    },
-    // Clear error message
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
+    },  },
 });
 
 export const {
@@ -53,7 +40,5 @@ export const {
   resetSignUpSuccess,
   setCurrentUser,
   logout,
-  setError,
-  clearError,
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { logout, setError } from "../../slices/authSlice";
+import { logout } from "../../slices/authSlice";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import conf from "../../conf/conf";
@@ -19,33 +19,27 @@ export default function LogoutBtn() {
         },
       });
 
-      // Check if the response is successful
       if (response.ok) {
-        const data = await response.json(); // Parse the response data
+        const data = await response.json(); 
         console.log(data);
         if (data) {
-          // Dispatch the login action with the received user data
           dispatch(logout());
         }
       } else {
         // If the response isn't ok (e.g., 400, 500 error), handle it here
         const errorData = await response.json();
-        dispatch(setError({ error: errorData.message }));
+        Swal.fire("Error", errorData.message, "error");
       }
     } catch (error) {
       // Catch any unexpected errors (e.g., network issues, timeout)
       if (error instanceof Error) {
-        dispatch(
-          setError({
-            error:
-              error.message ||
-              "An unexpected error occurred. Please try again.",
-          })
+        Swal.fire(
+          "Error",
+          error.message || "An unexpected error occurred. Please try again.",
+          "error"
         );
       } else {
-        dispatch(
-          setError({ error: "An unexpected error occurred. Please try again." })
-        );
+        Swal.fire("Error", "An unexpected error occurred. Please try again.");
       }
     }
   };

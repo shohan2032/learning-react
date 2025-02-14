@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setCurrentUser,
-  setError,
-  clearError,
-  resetSignUpSuccess,
-} from "../slices/authSlice";
+import { setCurrentUser, resetSignUpSuccess } from "../slices/authSlice";
 import { Store } from "../interface/reduxInterface";
 import conf from "../conf/conf";
 
@@ -15,13 +10,12 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { user, error, signUpSuccess } = useSelector(
-    (state: Store) => state.auth
-  );
+  const { user, signUpSuccess } = useSelector((state: Store) => state.auth);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [showSignUpSuccessMessage, setShowSignUpSuccessMessage] =
     useState<boolean>(false);
 
@@ -61,21 +55,15 @@ const Login: React.FC = () => {
       } else {
         const errorData = await response.json();
         // console.log(errorData);
-        dispatch(setError({ error: errorData.message }));
+        setError(errorData.message);
       }
     } catch (error) {
       if (error instanceof Error) {
-        dispatch(
-          setError({
-            error:
-              error.message ||
-              "An unexpected error occurred. Please try again.",
-          })
+        setError(
+          error.message || "An unexpected error occurred. Please try again."
         );
       } else {
-        dispatch(
-          setError({ error: "An unexpected error occurred. Please try again." })
-        );
+        setError("An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -172,7 +160,7 @@ const Login: React.FC = () => {
           Don't have an account?{" "}
           <Link
             to="/signup"
-            onClick={() => dispatch(clearError())}
+            onClick={() => setError("")}
             className="text-blue-500 hover:underline font-semibold"
           >
             Sign Up

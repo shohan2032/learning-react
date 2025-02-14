@@ -1,58 +1,274 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { formatDistanceToNow } from "date-fns";
 import BlogEditModal from "./BlogEditModal";
 import { useNavigate } from "react-router-dom";
-import {
-  filteredBlogById,
-  removeFavorite,
-  addFavorite,
-  likeBlog,
-  dislikeBlog,
-  addLikedBlog,
-  removeLikedBlog,
-  deleteBlog,
-} from "../slices/blogSlice";
-import { Store } from "../interface/reduxInterface";
+import { Store, Blog } from "../interface/reduxInterface";
+import conf from "../conf/conf";
 
 function BlogDetails() {
-  const dispatch = useDispatch();
   const { blogId } = useParams();
-  const username = useSelector((state:Store) => state.auth.user) || "";
-  const blog = useSelector((state:Store) => state.favoriteBlogs.BlogById);
-  console.log(blog);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [currentBlogId, setCurrentBlogId] = useState<any>(null);
+  const userId = useSelector((state: Store) => state.auth.user.id);
+  const [blog, setBlog] = useState<Blog>();
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [editableBlog, setEditableBlog] = useState<Blog | null>(null);
+  const [localLikeCount, setLocalLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
 
-  const favoriteBlogs = useSelector(
-    (state:Store) => state.favoriteBlogs.favoriteBlogs.get(username) || []
-  );
-  const allLikedBlogs = useSelector((state:Store) =>
-    state.favoriteBlogs.allLikedBlogs.has(username)
-      ? state.favoriteBlogs.allLikedBlogs.get(username)
-      : []
-  );
+  const getBlogDetails = async () => {
+    setIsLoading(true);
+    setError("");
 
-  const blogIdInNumber = Number(blogId);
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
 
-  const isFavorite = favoriteBlogs.includes(blogIdInNumber);
-  let hasLiked = allLikedBlogs?.includes(blogIdInNumber);
+      const response = await fetch(
+        `${conf.apiUrl}/blog/blog-by-id?blogId=${encodeURIComponent(blogId)}`,
+        {
+          credentials: "include",
+        }
+      );
 
-  const [localLikeCount, setLocalLikeCount] = useState(0);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setBlog(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    dispatch(filteredBlogById({ blogId: blogIdInNumber }));
-  }, [dispatch]);
+    getBlogDetails();
+  });
+
+  const addLike = async () => {
+    setIsLoading(true);
+    setError("");
+    const payload = {
+      blogId: blogId,
+      authorId: userId,
+    };
+    try {
+      const response = await fetch(`${conf.apiUrl}/blog/delete-blog`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      console.log("🚀 ~ deleteBlog ~ response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // const data = await response.json();
+      // console.log(data);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete blog!"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getHasLiked = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
+
+      const response = await fetch(
+        `${conf.apiUrl}/like/is-liked?blogId=${encodeURIComponent(
+          blogId
+        )}?userId=${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setHasLiked(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeLike = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
+
+      const response = await fetch(
+        `${conf.apiUrl}/like/remove-like?blogId=${encodeURIComponent(
+          blogId
+        )}?userId=${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIsFavorite(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getHasLiked();
+  });
+
+  const getHasFavorite = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
+
+      const response = await fetch(
+        `${conf.apiUrl}/favorite/is-favorite?blogId=${encodeURIComponent(
+          blogId
+        )}?userId=${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIsFavorite(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getHasFavorite();
+  });
+
+  // const favoriteBlogs = useSelector(
+  //   (state: Store) => state.favoriteBlogs.favoriteBlogs.get(username) || []
+  // );
+  // const allLikedBlogs = useSelector((state: Store) =>
+  //   state.favoriteBlogs.allLikedBlogs.has(username)
+  //     ? state.favoriteBlogs.allLikedBlogs.get(username)
+  //     : []
+  // );
+
+  // const blogIdInNumber = Number(blogId);
+
+  // const isFavorite = favoriteBlogs.includes(blogIdInNumber);
+  // let hasLiked = allLikedBlogs?.includes(blogIdInNumber);
 
   useEffect(() => {
     if (blog) {
       setLocalLikeCount(blog.likeCount);
     }
   }, [blog]);
-  console.log(blog);
+
+  const removeFavorite = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
+
+      const response = await fetch(
+        `${conf.apiUrl}/favorite/remove-favorite?blogId=${encodeURIComponent(
+          blogId
+        )}?userId=${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIsFavorite(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeLike = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!blogId) {
+        throw new Error("Blog ID is undefined");
+      }
+
+      const response = await fetch(
+        `${conf.apiUrl}/like/remove-like?blogId=${encodeURIComponent(
+          blogId
+        )}?userId=${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIsFavorite(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFavoriteClick = async () => {
     if (isFavorite) {
       const result = await Swal.fire({
@@ -65,7 +281,7 @@ function BlogDetails() {
       });
 
       if (result.isConfirmed) {
-        dispatch(removeFavorite({ username, blogId: blogIdInNumber }));
+        removeFavorite();
         Swal.fire(
           "Removed!",
           "This blog has been removed from favorites.",
@@ -82,16 +298,49 @@ function BlogDetails() {
       dispatch(removeLikedBlog({ username, blogId: blogIdInNumber }));
       dispatch(dislikeBlog({ blogId: blogIdInNumber }));
       setLocalLikeCount(localLikeCount - 1);
-      hasLiked = false;
+      setHasLiked(false);
     } else {
       dispatch(addLikedBlog({ username, blogId: blogIdInNumber }));
       dispatch(likeBlog({ blogId: blogIdInNumber }));
       setLocalLikeCount(localLikeCount + 1);
-      hasLiked = true;
+      setHasLiked(true);
     }
   };
 
-  const handleDelete = (blogId:number) => {
+  const deleteBlog = async (blogId: number) => {
+    setIsLoading(true);
+    setError("");
+    const payload = {
+      blogId: blogId,
+      authorId: userId,
+    };
+    try {
+      const response = await fetch(`${conf.apiUrl}/blog/delete-blog`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      console.log("🚀 ~ deleteBlog ~ response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // const data = await response.json();
+      // console.log(data);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete blog!"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = (blogId: number) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -100,9 +349,9 @@ function BlogDetails() {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        dispatch(deleteBlog({ blogId }));
+        await deleteBlog(blogId);
         Swal.fire({
           title: "Deleted!",
           text: "Your blog has been deleted.",
@@ -114,15 +363,13 @@ function BlogDetails() {
     });
   };
 
-  const handleEdit = (blogId:any) => {
-    setCurrentBlogId(blogId);
-    setIsModalOpen(true);
+  const handleEdit = (blog: Blog) => {
+    setEditableBlog(blog);
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setCurrentBlogId(null);
-    dispatch(filteredBlogById({ blogId: blogIdInNumber }));
+    setEditableBlog(null);
+    getBlogDetails();
   };
 
   return (
@@ -133,18 +380,20 @@ function BlogDetails() {
             {blog.title}
           </h1>
           <img
-            src={`https://picsum.photos/seed/${blog.imageId}/800/500`}
+            src={`${blog.imageUrl}`}
             alt="Blog Cover"
             className="w-full rounded-xl shadow-xl mb-6"
           />
           <div className="text-center">
             <p className="text-xl mb-2 text-gray-800">
               <span className="font-semibold text-indigo-700">Author:</span>{" "}
-              {blog.author}
+              {blog.authorName}
             </p>
             <p className="text-gray-500 text-sm font-semibold">
               Published:{" "}
-              {formatDistanceToNow(new Date(blog.id), { addSuffix: true })}
+              {formatDistanceToNow(new Date(blog.createdAt), {
+                addSuffix: true,
+              })}
             </p>
             <p className="text-gray-500 text-sm font-semibold">
               Estimated Reading Time: {blog.estimateReadingTime}
@@ -184,10 +433,10 @@ function BlogDetails() {
             </button>
           </div>
 
-          {username === blog.author && (
+          {userId === blog.id && (
             <div className="flex justify-center space-x-4 mt-6">
               <button
-                onClick={() => handleEdit(blog.id)}
+                onClick={() => handleEdit(blog)}
                 className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition"
               >
                 Edit
@@ -201,8 +450,8 @@ function BlogDetails() {
             </div>
           )}
 
-          {isModalOpen && (
-            <BlogEditModal blogId={currentBlogId} closeModal={closeModal} />
+          {editableBlog && (
+            <BlogEditModal blog={editableBlog} closeModal={closeModal} />
           )}
         </>
       ) : (

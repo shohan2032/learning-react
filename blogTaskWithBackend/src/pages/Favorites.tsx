@@ -6,7 +6,7 @@ import { Store } from "../interface/reduxInterface";
 
 function Favorites() {
   const dispatch = useDispatch();
-  const username = useSelector((state: Store) => state.auth.user) || "";
+  const username = useSelector((state: Store) => state.auth.user.username) || "";
   const navigate = useNavigate();
   const allBlogs = useSelector((state: Store) => state.favoriteBlogs.allBlogs);
   const favoriteBlogsId = useSelector(
@@ -78,8 +78,8 @@ function Favorites() {
       </h2>
 
       {sortedFavoriteBlogs.length === 0 ? (
-        <p className="text-center text-gray-500 text-xl">
-          No favorite blogs found.
+        <p className="text-center text-2xl font-semibold text-gray-600 mt-6">
+          🚀 No blogs found!
         </p>
       ) : (
         sortedFavoriteBlogs.map((blog) => (
@@ -90,7 +90,7 @@ function Favorites() {
             <div className="relative">
               <img
                 className="w-full h-56 object-cover rounded-lg"
-                src={`https://picsum.photos/seed/${blog?.imageId}/600/400`}
+                src={`https://picsum.photos/seed/${blog?.imageUrl}/600/400`}
                 alt="Blog Cover"
               />
             </div>

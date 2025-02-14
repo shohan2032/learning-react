@@ -2,9 +2,10 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import LogoutBtn from "./LogoutBtn";
 import { Store } from "../../interface/reduxInterface";
+
 const Header: React.FC = () => {
-  console.log("header a ashce")
-  const currentUser = useSelector((state:Store) => state.auth.user.username);
+  console.log("header a ashce");
+  const currentUser = useSelector((state: Store) => state.auth.user.username);
   const navigate = useNavigate();
 
   interface NavItems {
@@ -42,6 +43,15 @@ const Header: React.FC = () => {
           <span className="text-2xl font-bold text-white tracking-wide">
             Blog Hub
           </span>
+          {currentUser && (
+            <div className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-full shadow-md transition duration-300 ease-in-out">
+              👋 Welcome,{" "}
+              <span className="text-purple-600">
+                {currentUser.toUpperCase()}
+              </span>
+              !
+            </div>
+          )}
         </div>
 
         {/* Navigation Links */}
@@ -68,6 +78,6 @@ const Header: React.FC = () => {
       </nav>
     </header>
   );
-}
+};
 
 export default Header;

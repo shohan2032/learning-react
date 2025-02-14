@@ -1,24 +1,64 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { addBlog } from "../slices/blogSlice";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Store } from "../interface/reduxInterface";
+import conf from "../conf/conf";
 
 function AddBlog() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const username = useSelector((state: Store) => state.auth.user.username) || "";
+  const id = useSelector((state: Store) => state.auth.user.id);
+  const username = useSelector((state: Store) => state.auth.user.username);
 
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
   const [estimateReadingTime, setEstimateReadingTime] = useState<number>(10);
   const [randomNumber, setRandomNumber] = useState<number>(100);
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setRandomNumber(Math.floor(Math.random() * 1000 + 1));
   }, []);
+
+  const createBlog = async () => {
+    const apiUrl = conf.apiUrl;
+    const payload = {
+      title: title,
+      author_id: id,
+      author_name: username,
+      content: content,
+      is_private: isPrivate,
+      image_url: `https://picsum.photos/seed/${randomNumber}/600/400`,
+      estimate_reading_time: estimateReadingTime,
+    };
+
+    try {
+      setIsLoading(true);
+      setError("");
+      const response = await fetch(`${apiUrl}/blog/create-blog`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      console.log("🚀 ~ createBlog ~ response:", response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to create blog. Try again later"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,16 +72,7 @@ function AddBlog() {
       return;
     }
 
-    dispatch(
-      addBlog({
-        title,
-        author: username,
-        content,
-        isPrivate,
-        imageId: randomNumber,
-        estimateReadingTime,
-      })
-    );
+    createBlog();
 
     Swal.fire("Success", "Blog added successfully!", "success");
     navigate("/");
@@ -52,6 +83,18 @@ function AddBlog() {
       <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
         ✍️ Add a New Blog
       </h1>
+      {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
+      {isLoading && (
+        <div className="text-center">
+          <svg
+            className="animate-spin w-6 h-6 text-gray-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          ></svg>
+          <p className="text-gray-500 text-xs">Creating blog...</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

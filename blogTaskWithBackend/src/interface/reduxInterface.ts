@@ -5,19 +5,20 @@ export type User = {
 
 export interface AuthState {
   user: User;
-  error: string | null;
   signUpSuccess: boolean;
 }
 
 export type Blog = {
   id: number;
   title: string;
-  author: string;
+  authorId: number;
+  authorName: string;
   content: string;
   likeCount: number;
   isPrivate: boolean;
-  imageId?: number;
+  imageUrl: string;
   estimateReadingTime?: number;
+  createdAt: Date;
 };
 
 export interface BlogState {

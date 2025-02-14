@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { signup, setError, clearError } from "../slices/authSlice";
+import { signup } from "../slices/authSlice";
 import Swal from "sweetalert2";
 import { Store } from "../interface/reduxInterface";
 import conf from "../conf/conf";
@@ -11,7 +11,8 @@ function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signUpSuccess, error } = useSelector((state: Store) => state.auth);
+  const [error, setError] = useState<string>("");
+  const { signUpSuccess } = useSelector((state: Store) => state.auth);
 
   const signupUser = async () => {
     const apiUrl = conf.apiUrl;
@@ -25,9 +26,9 @@ function Signup() {
       const response = await fetch(`${apiUrl}/user/register`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Tell the server we are sending JSON data
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload), // Send the payload as the request body
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -39,22 +40,18 @@ function Signup() {
       } else {
         // If the response isn't ok (e.g., 400, 500 error), handle it here
         const errorData = await response.json();
-        dispatch(setError({ error: errorData.message }));
+        setError(errorData.message);
       }
     } catch (error) {
       // Catch any unexpected errors (e.g., network issues, timeout)
       if (error instanceof Error) {
-        dispatch(
-          setError({
-            error:
-              error.message ||
-              "An unexpected error occurred. Please try again.",
-          })
+        Swal.fire(
+          "Error",
+          error.message || "An unexpected error occurred. Please try again.",
+          "error"
         );
       } else {
-        dispatch(
-          setError({ error: "An unexpected error occurred. Please try again." })
-        );
+        Swal.fire("Error", "An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -105,7 +102,7 @@ function Signup() {
           Already have an account?{" "}
           <Link
             to="/login"
-            onClick={() => dispatch(clearError())}
+            onClick={() => setError("")}
             className="text-blue-500 font-medium hover:underline"
           >
             Sign In
