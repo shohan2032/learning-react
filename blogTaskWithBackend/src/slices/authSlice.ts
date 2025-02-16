@@ -29,7 +29,7 @@ const authSlice = createSlice({
 
     // Logout action
     logout: (state) => {
-      console.log("logout");
+      // console.log("logout");
       state.user.id = 0;
       state.user.username = "";
     },  },

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setCurrentUser } from "./slices/authSlice";
 const App = () => {
-  console.log("App a ashce");
+  // console.log("App a ashce");
   const dispatch = useDispatch();
 
   useEffect(() => {

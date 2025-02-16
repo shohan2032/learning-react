@@ -68,7 +68,7 @@ function MyBlog() {
         body: JSON.stringify(payload),
       });
       console.log("🚀 ~ deleteBlog ~ response:", response);
-
+      // console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

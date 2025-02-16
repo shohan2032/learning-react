@@ -45,7 +45,7 @@ function AddBlog() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      console.log("🚀 ~ createBlog ~ response:", response);
+      // console.log("🚀 ~ createBlog ~ response:", response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

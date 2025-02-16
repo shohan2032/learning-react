@@ -4,7 +4,7 @@ import LogoutBtn from "./LogoutBtn";
 import { Store } from "../../interface/reduxInterface";
 
 const Header: React.FC = () => {
-  console.log("header a ashce");
+  // console.log("header a ashce");
   const currentUser = useSelector((state: Store) => state.auth.user.username);
   const navigate = useNavigate();
 

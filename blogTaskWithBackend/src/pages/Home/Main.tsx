@@ -46,7 +46,9 @@ function Main() {
 
     try {
       const response = await fetch(
-        `${conf.apiUrl}/blog/filtered-blogs/?searchTerm=${encodeURIComponent(searchTerm)}`,// used Query Parameters
+        `${conf.apiUrl}/blog/filtered-blogs/?searchTerm=${encodeURIComponent(
+          searchTerm
+        )}`, // used Query Parameters
         {
           credentials: "include",
         }
@@ -80,7 +82,7 @@ function Main() {
   }, [debouncedSearchTerm]);
 
   const displayedBlogs = searchTerm ? filteredBlogs : allBlogs;
-  const noResultsFound = searchTerm && filteredBlogs.length === 0 && !isLoading;
+  // const noResultsFound = searchTerm && filteredBlogs.length === 0 && !isLoading;
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -104,23 +106,22 @@ function Main() {
         </div>
       )}
 
-      {noResultsFound && (
+      {/* {noResultsFound && (
         <p className="text-center text-2xl font-semibold text-gray-600 mt-6">
           🚀 No blogs found. Try a different search!
         </p>
-      )}
+      )} */}
 
       {!isLoading && !error && displayedBlogs.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 my-6">
-          {displayedBlogs
-            .map((blog) => (
-              <div
-                key={blog.id}
-                className="transform transition duration-300 hover:scale-105"
-              >
-                <BlogCard blog={blog} />
-              </div>
-            ))}
+          {displayedBlogs.map((blog) => (
+            <div
+              key={blog.id}
+              className="transform transition duration-300 hover:scale-105"
+            >
+              <BlogCard blog={blog} />
+            </div>
+          ))}
         </div>
       )}
     </div>

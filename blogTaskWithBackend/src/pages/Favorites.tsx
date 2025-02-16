@@ -1,23 +1,83 @@
-import { useDispatch, useSelector } from "react-redux";
-import { removeFavorite } from "../slices/blogSlice";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Store } from "../interface/reduxInterface";
+import { Store, Blog } from "../interface/reduxInterface";
+import { useEffect, useState } from "react";
+import conf from "../conf/conf";
 
 function Favorites() {
-  const dispatch = useDispatch();
-  const username = useSelector((state: Store) => state.auth.user.username) || "";
   const navigate = useNavigate();
-  const allBlogs = useSelector((state: Store) => state.favoriteBlogs.allBlogs);
-  const favoriteBlogsId = useSelector(
-    (state: Store) => state.favoriteBlogs.favoriteBlogs.get(username) || []
-  );
-  const favoriteBlogs = favoriteBlogsId
-    .map((blogId) => allBlogs.find((b) => b.id === blogId))
-    .filter(Boolean);
-  const sortedFavoriteBlogs = [...favoriteBlogs].sort(
-    (a, b) => (b?.id ?? 0) - (a?.id ?? 0)
-  );
+  const [favoriteBlogs, setFavoriteBlogs] = useState<Blog[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const userId = useSelector((state: Store) => state.auth.user.id);
+
+  const getFavoriteBlogs = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${conf.apiUrl}/blog/all-favorites?user_id=${encodeURIComponent(
+          userId
+        )}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // console.log("🚀 ~ getFavoriteBlogs ~ data:", data);
+      setFavoriteBlogs(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load blogs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getFavoriteBlogs();
+  }, [userId]);
+
+  const removeFavorite = async (blogId: number) => {
+    setIsLoading(true);
+    setError("");
+    const payload = {
+      user_id: userId,
+      blog_id: blogId,
+    };
+    try {
+      const response = await fetch(`${conf.apiUrl}/favorite/remove-favorite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      console.log("🚀 ~ removefavoriteTofavoriteTable ~ response:", response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setFavoriteBlogs((prevBlogs) =>
+        prevBlogs.filter((blog) => blog.id !== blogId)
+      );
+      // const data = await response.json();
+      // console.log(data);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete blog!"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleRemoveFavorite = async (blogId: number) => {
     const result = await Swal.fire({
@@ -30,7 +90,7 @@ function Favorites() {
     });
 
     if (result.isConfirmed) {
-      dispatch(removeFavorite({ username, blogId }));
+      removeFavorite(blogId);
       Swal.fire(
         "Removed!",
         "This blog has been removed from favorites.",
@@ -39,7 +99,7 @@ function Favorites() {
     }
   };
 
-  const getRelativeTime = (timestamp: number) => {
+  const getRelativeTime = (timestamp: Date) => {
     const now = new Date();
     const createdAt = new Date(timestamp);
     const diffInSeconds = Math.floor(
@@ -72,55 +132,79 @@ function Favorites() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-4xl font-semibold text-center text-gray-800 mb-8">
+    <div className="max-w-4xl mx-auto p-6">
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
         My Favorite Blogs
       </h2>
 
-      {sortedFavoriteBlogs.length === 0 ? (
+      {/* Error Message */}
+      {error && (
+        <div className="text-center p-4 mb-6 bg-red-50 rounded-lg">
+          <p className="text-red-600 font-medium">{error}</p>
+        </div>
+      )}
+
+      {/* Loading Spinner */}
+      {isLoading && (
+        <div className="flex justify-center my-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+
+      {/* No Favorite Blogs Message */}
+      {favoriteBlogs.length === 0 && !isLoading && !error ? (
         <p className="text-center text-2xl font-semibold text-gray-600 mt-6">
-          🚀 No blogs found!
+          🚀 No favorite blogs found!
         </p>
       ) : (
-        sortedFavoriteBlogs.map((blog) => (
+        favoriteBlogs.map((blog) => (
           <div
-            key={blog?.id}
-            className="bg-white shadow-lg rounded-xl p-6 mb-6 hover:shadow-xl transition duration-300 ease-in-out"
+            key={blog.id}
+            className="bg-white shadow-md rounded-lg p-5 mb-4 hover:bg-gray-100 transition"
           >
             <div className="relative">
               <img
-                className="w-full h-56 object-cover rounded-lg"
-                src={`https://picsum.photos/seed/${blog?.imageUrl}/600/400`}
+                className="w-full h-48 object-cover rounded-md"
+                src={blog.imageUrl || "https://via.placeholder.com/300"}
                 alt="Blog Cover"
               />
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mt-6">
-              {blog?.title}
+
+            <h3 className="text-2xl font-bold text-gray-900">
+              Title: {blog.title}
             </h3>
-            <p className="text-gray-700 mt-3">
-              {blog && truncateContent(blog.content)}
-            </p>
-            <div className="text-gray-500 text-sm font-semibold mt-4">
-              Published: {blog?.id ? getRelativeTime(blog.id) : "Unknown"}
-            </div>
-            <p className="text-gray-500 text-sm font-semibold">
-              Estimate Reading Time: {blog?.estimateReadingTime}
+
+            <p className="text-gray-700 mt-2">
+              Content: {truncateContent(blog.content)}
             </p>
 
-            <div className="flex justify-between items-center mt-6">
-              <p className="text-gray-500 text-sm">Likes: {blog?.likeCount}</p>
-              <div className="flex space-x-6">
+            <p className="text-gray-900 font-medium">
+              👤 Author: {blog.authorName || "Unknown"}
+            </p>
+
+            <p className="text-black text-xl font-semibold">
+              Published: {getRelativeTime(blog.createdAt)}
+            </p>
+
+            <p className="text-gray-500 text-sm font-semibold">
+              Estimate Reading Time: {blog.estimateReadingTime} min
+            </p>
+
+            <div className="flex justify-between items-center mt-4">
+              <p className="text-gray-500">👍 Likes: {blog.likeCount}</p>
+
+              <div className="flex space-x-4">
                 <button
-                  onClick={() => blog && handleRemoveFavorite(blog.id)}
-                  className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition duration-200"
-                >
-                  Remove from Favorites
-                </button>
-                <button
-                  className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition duration-200"
-                  onClick={() => navigate(`/blog-details/${blog?.id}`)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md transition"
+                  onClick={() => navigate(`/blog-details/${blog.id}`)}
                 >
                   Details
+                </button>
+                <button
+                  onClick={() => handleRemoveFavorite(blog.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                >
+                  Remove
                 </button>
               </div>
             </div>

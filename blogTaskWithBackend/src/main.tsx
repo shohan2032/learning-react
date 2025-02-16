@@ -10,12 +10,10 @@ import Login from "./Auth/Login";
 import Signup from "./Auth/Signup";
 import Favorites from "./pages/Favorites";
 import Home from "./pages/Home/Home";
-import { enableMapSet } from "immer";
 import BlogDetails from "./pages/BlogDetails";
 import MyBlog from "./pages/MyBlog";
 import AddBlog from "./pages/AddBlog";
 import LastTenLikedBlogs from "./pages/LastTenLikedBlogs";
-enableMapSet();
 
 const routes = createBrowserRouter([
   {
@@ -86,11 +84,9 @@ const routes = createBrowserRouter([
 const rootElement = document.getElementById("root");
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <Provider store={store}>
-        <RouterProvider router={routes} />
-      </Provider>
-    </React.StrictMode>
+    <Provider store={store}>
+      <RouterProvider router={routes} />
+    </Provider>
   );
 } else {
   console.error("Failed to find the root element");

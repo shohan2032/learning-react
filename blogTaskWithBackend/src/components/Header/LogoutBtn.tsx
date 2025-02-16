@@ -21,7 +21,7 @@ export default function LogoutBtn() {
 
       if (response.ok) {
         const data = await response.json(); 
-        console.log(data);
+        // console.log(data);
         if (data) {
           dispatch(logout());
         }
