@@ -333,6 +333,171 @@ export default App;
 
 ---
 
+### Creating Context: 
+```javascript
+import { createContext, useReducer } from "react";
+
+const allBlogs = JSON.parse(localStorage.getItem("allBlogs")) || [];
+("allLikedBlogs")) || [];
+const initialState = {
+  allBlogs: allBlogs,
+  error: null,
+};
+
+function blogReducer(state, action) {
+  switch (action.type) {
+    case "addBlog": {
+      const newBlog = {
+        id: Date.now(),
+        ...action.payload,
+        likeCount: 0,
+      };
+
+      const updatedBlogs = [...state.allBlogs, newBlog];
+      localStorage.setItem("allBlogs", JSON.stringify(updatedBlogs));
+
+      return { ...state, allBlogs: updatedBlogs };
+    }
+
+    default:
+      return state;
+  }
+}
+
+const BlogContext = createContext();
+export function BlogProvider({ children }) {
+  const [state, dispatch] = useReducer(blogReducer, initialState);
+
+  return (
+    <BlogContext.Provider value={{ state, dispatch }}>
+      {children}
+    </BlogContext.Provider>
+  );
+}
+
+export default BlogContext;
+
+```
+### Consuming Context 
+```javascript
+import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import AuthContext from "../contexts/authContext";
+import BlogContext from "../contexts/blogContext";
+
+function AddBlog() {
+  const { state } = useContext(AuthContext);
+  const { dispatch } = useContext(BlogContext);
+  const navigate = useNavigate();
+  const username = state.user;
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [estimateReadingTime, setEstimateReadingTime] = useState(10);
+  const [randomNumber, setRandomNumber] = useState(100);
+  useEffect(() => {
+    setRandomNumber(Math.floor(Math.random() * 1000 + 1));
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      Swal.fire("Error", "Title is required!", "error");
+      return;
+    }
+    if (!content.trim()) {
+      Swal.fire("Error", "Content is required!", "error");
+      return;
+    }
+    dispatch({
+      type: "addBlog",
+      payload: {
+        title,
+        author: username,
+        content,
+        isPrivate,
+        imageId: randomNumber,
+        estimateReadingTime,
+      },
+    });
+
+    Swal.fire("Success", "Blog added successfully!", "success");
+    navigate("/");
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-8 mt-6 bg-white shadow-lg rounded-lg">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        ✍️ Add a New Blog
+      </h1>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block font-semibold text-gray-700">Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Enter blog title"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">Content</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            rows="6"
+            placeholder="Write your blog content..."
+            required
+          ></textarea>
+        </div>
+
+        <div>
+          <label className="block font-semibold text-gray-700">
+            Estimate Reading Time (minutes)
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={estimateReadingTime}
+            onChange={(e) => setEstimateReadingTime(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Enter estimate reading time"
+            required
+          />
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <input
+            type="checkbox"
+            checked={isPrivate}
+            onChange={() => setIsPrivate(!isPrivate)}
+            className="w-5 h-5 accent-blue-500"
+          />
+          <label className="text-gray-700">Make this blog private</label>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all transform hover:scale-[1.02] focus:ring-4 focus:ring-blue-300"
+        >
+          🚀 Publish Blog
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default AddBlog;
+```
+
 ### **2. `useReducer`**
 #### **Concept**
 - `useReducer` is a React hook that manages more complex state logic than `useState`.
@@ -376,6 +541,7 @@ const Counter = () => {
 
 export default Counter;
 ```
+### 
 
 #### **When to Use `useReducer`**
 - When the state logic involves multiple actions or complex state transitions.
@@ -456,6 +622,217 @@ const App = () => (
 );
 
 export default App;
+```
+
+### Creating Store
+```javascript
+// store.js
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "../slices/authSlice";
+
+const store = configureStore({
+  reducer: {
+    auth: authReducer,
+  },
+});
+export default store;
+```
+
+### Creating slices/features
+```javascript
+import { createSlice } from "@reduxjs/toolkit";
+
+const allUsers = JSON.parse(localStorage.getItem("users")) || {};
+const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+
+const initialState = {
+  user: currentUser,
+  users: new Map(Object.entries(allUsers)),
+  error: null,
+  signUpSuccess: false,
+};
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    signup: (state, action) => {
+      if (action.payload.password.length < 5) {
+        state.error = "Password must be at least 5 characters long";
+        return;
+      }
+      const { username, password } = action.payload;
+
+      if (state.users.has(username)) {
+        state.error = "Username already exists";
+        return;
+      }
+
+      state.users.set(username, password);
+      localStorage.setItem(
+        "users",
+        JSON.stringify(Object.fromEntries(state.users))
+      );
+      
+      state.signUpSuccess = true;
+      state.error = null;
+    },
+    resetSignUpSuccess: (state) => {
+      state.signUpSuccess = false;
+    },
+    login: (state, action) => {
+      const { username, password } = action.payload;
+
+      if (state.users.has(username) && state.users.get(username) === password) {
+        state.user = username;
+        localStorage.setItem("user", JSON.stringify(username));
+        state.error = null;
+      } else {
+        state.error = "Invalid username or password";
+      }
+    },
+    logout: (state) => {
+      state.user = null;
+      localStorage.removeItem("user");
+      state.error = null;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+});
+
+export const { signup, resetSignUpSuccess, login, logout, clearError } = authSlice.actions;
+export default authSlice.reducer;
+```
+### Consuming features using store:
+```javascript
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { login, clearError, resetSignUpSuccess } from "../slices/authSlice";
+
+function Login() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, error, signUpSuccess } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showSignUpSuccessMessage, setShowSignUpSuccessMessage] = useState(false);
+
+  useEffect(() => {
+    if (signUpSuccess) {
+      dispatch(resetSignUpSuccess());
+      setShowSignUpSuccessMessage(true);
+    }
+  }, []);
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    setLoading(true);
+    dispatch(login({ username, password }));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
+        {showSignUpSuccessMessage && (
+          <div className="mb-4 bg-green-50 border border-green-400 text-green-600 text-sm rounded-md p-3">
+            Account created successfully! Please login with your credentials.
+          </div>
+        )}
+        <div className="text-center">
+          <Link to="/">
+            <img
+              src="https://images-platform.99static.com/v84irzbNBd5aawXGKXfH4SEjcn0=/0x0:960x960/500x500/top/smart/99designs-contests-attachments/117/117132/attachment_117132760"
+              alt="Logo"
+              className="h-16 w-16 mx-auto mb-4"
+            />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome!!!</h1>
+          <p className="text-sm text-gray-600 mt-2">
+            Sign in to continue to{" "}
+            <span className="font-semibold">Blog Hub</span>
+          </p>
+        </div>
+
+        {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
+
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base py-3 px-4 sm:text-lg"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base py-3 px-4 sm:text-lg"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 px-4 text-white rounded-md font-medium text-lg ${
+              loading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 focus:ring focus:ring-blue-300"
+            }`}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            onClick={() => dispatch(clearError())}
+            className="text-blue-500 hover:underline font-semibold"
+          >
+            Sign Up
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Login;
+
 ```
 
 #### **When to Use Redux Toolkit**

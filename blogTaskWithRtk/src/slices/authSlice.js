@@ -31,9 +31,7 @@ const authSlice = createSlice({
         "users",
         JSON.stringify(Object.fromEntries(state.users))
       );
-
-      // state.user = username;
-      // localStorage.setItem("user", JSON.stringify(username));
+      
       state.signUpSuccess = true;
       state.error = null;
     },
