@@ -1091,3 +1091,185 @@ export const useSetGlobalFont = () => {
   });
 };
 ```
+
+
+
+The choice between `invalidateQueries` and `setQueryData` depends on your specific needs. Let me break down when to use each:
+
+## When to Use `invalidateQueries` (Recommended Default)
+
+**Use when:**
+- ✅ You want to ensure data is always fresh from the server
+- ✅ The operation might affect other related data
+- ✅ You're not 100% sure about the exact shape of cached data
+- ✅ Multiple queries might be affected by the change
+- ✅ You want the simplest, most reliable approach
+
+```javascript
+// After deleting a user
+queryClient.invalidateQueries({ queryKey: ['users'] });
+
+// Why this is good:
+// - Guarantees fresh data from server
+// - Handles edge cases you might not think of
+// - Works even if cache structure changes
+// - Simple and reliable
+```
+
+## When to Use `setQueryData` (Manual Cache Update)
+
+**Use when:**
+- ✅ You want immediate UI updates (no loading state)
+- ✅ You know exactly what the server response will be
+- ✅ The change is simple and predictable
+- ✅ You want to minimize network requests
+- ✅ You're implementing optimistic updates
+
+```javascript
+// After deleting a user
+queryClient.setQueryData(['users'], (oldData) =>
+  oldData.filter(user => user.id !== deletedUserId)
+);
+
+// Why this is good:
+// - Instant UI update (no loading state)
+// - Reduces server requests
+// - Better user experience for simple operations
+```
+
+## Hybrid Approach (Best Practice)
+
+The most robust approach is often to use **both**:
+
+```javascript
+const deleteUserMutation = useMutation({
+  mutationFn: async (userId) => {
+    await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+    return userId;
+  },
+  onMutate: async (userId) => {
+    // 1. Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['users'] });
+    
+    // 2. Snapshot current data for rollback
+    const previousUsers = queryClient.getQueryData(['users']);
+    
+    // 3. Optimistically update cache (immediate UI update)
+    queryClient.setQueryData(['users'], (oldData) =>
+      oldData?.filter(user => user.id !== userId) || []
+    );
+    
+    return { previousUsers };
+  },
+  onError: (error, userId, context) => {
+    // 4. Rollback on error
+    if (context?.previousUsers) {
+      queryClient.setQueryData(['users'], context.previousUsers);
+    }
+  },
+  onSettled: () => {
+    // 5. Always refetch to ensure consistency
+    queryClient.invalidateQueries({ queryKey: ['users'] });
+  }
+});
+```
+
+## Real-World Decision Matrix
+
+| Scenario | Recommended Approach | Reason |
+|----------|---------------------|---------|
+| **Simple delete operation** | `setQueryData` then `invalidateQueries` | Immediate UI + eventual consistency |
+| **Complex server logic** | `invalidateQueries` only | Server might return unexpected changes |
+| **Multiple related queries** | `invalidateQueries` | Affects more than one cache entry |
+| **Optimistic updates** | `setQueryData` in `onMutate` | Better UX with rollback capability |
+| **Create operation** | `invalidateQueries` | New item might have server-generated fields |
+| **Update operation** | Hybrid approach | Balance of immediacy and accuracy |
+
+## Examples from Your Font Code
+
+Looking at your font management code, let's analyze each case:
+
+### 1. Delete Font - Current Implementation
+```javascript
+onSuccess: () => {
+  queryClient.invalidateQueries({
+    queryKey: fontQueryKeys.siteFonts(siteId),
+  });
+  message.success('Font deleted successfully');
+}
+```
+
+**Analysis**: ✅ Good choice because:
+- Font deletion might trigger server-side cascading updates
+- Font list structure is complex (Google fonts + custom fonts)
+- Simple and reliable
+
+### 2. Create Font - Current Implementation  
+```javascript
+onSuccess: () => {
+  queryClient.invalidateQueries({
+    queryKey: fontQueryKeys.siteFonts(siteId),
+  });
+  message.success('Font added successfully');
+}
+```
+
+**Analysis**: ✅ Good choice because:
+- Server might add additional fields (ID, timestamps, processed settings)
+- You don't know the exact final structure of the created font
+
+### 3. Set Global Font - Could Be Optimized
+```javascript
+// Current approach
+onSuccess: () => {
+  queryClient.invalidateQueries({
+    queryKey: fontQueryKeys.siteFonts(siteId),
+  });
+  message.success('Global Font Updated Successfully');
+}
+
+// Optimized approach
+onSuccess: ({ fontId, previousDefaultFontId }) => {
+  // Immediate UI update
+  queryClient.setQueryData(fontQueryKeys.siteFonts(siteId), (oldData) => {
+    if (!oldData) return oldData;
+    
+    return {
+      ...oldData,
+      google_fonts: oldData.google_fonts?.map(font => ({
+        ...font,
+        isDefault: font.id === fontId
+      })) || [],
+      custom_fonts: oldData.custom_fonts?.map(font => ({
+        ...font,
+        isDefault: font.id === fontId
+      })) || []
+    };
+  });
+  
+  // Ensure consistency
+  queryClient.invalidateQueries({
+    queryKey: fontQueryKeys.siteFonts(siteId),
+  });
+  
+  message.success('Global Font Updated Successfully');
+}
+```
+
+## My Recommendation for Your Code
+
+Your current approach using `invalidateQueries` is **perfectly fine** and follows best practices for:
+- **Simplicity**: Easy to understand and maintain
+- **Reliability**: Always gets fresh data
+- **Safety**: Handles edge cases automatically
+
+If you want to optimize for better UX, consider the hybrid approach for operations like "Set as Global" where you know exactly what changes.
+
+## Summary
+
+- **Start with `invalidateQueries`** - it's the safest, most reliable approach
+- **Add `setQueryData` optimizations** when you need immediate UI updates
+- **Use the hybrid approach** for the best user experience
+- **Keep it simple** unless you have a specific performance or UX requirement
+
+The `invalidateQueries` approach ensures data consistency and handles complex server-side logic gracefully.
